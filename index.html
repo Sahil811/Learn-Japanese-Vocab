@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japanese Word & Example Finder</title>
+    <title>Japanese Dojo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f4f7f9;
+            --bg-color: #f8f9fa;
             --surface-color: #ffffff;
-            --primary-color: #6200ea;
-            --primary-variant: #3700b3;
-            --secondary-color: #03dac6;
-            --text-color: #212121;
-            --text-secondary: #666666;
-            --border-color: #e0e0e0;
-            --shadow-color: rgba(0, 0, 0, 0.1);
+            --primary-color: #1a73e8;
+            --primary-variant: #0d62d9;
+            --secondary-color: #4285f4;
+            --text-color: #202124;
+            --text-secondary: #5f6368;
+            --border-color: #dadce0;
+            --shadow-color: rgba(60, 64, 67, 0.15);
+            --success-color: #34a853;
+            --error-color: #ea4335;
         }
 
         @keyframes fadeIn {
@@ -29,79 +31,102 @@
             to { transform: rotate(360deg); }
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: 'Roboto', 'Noto Sans JP', sans-serif;
             margin: 0;
-            padding: 2rem;
-            line-height: 1.6;
+            padding: 0;
+            line-height: 1.5;
+            font-weight: 400;
         }
 
-        .container {
-            max-width: 1200px;
+        .app-container {
+            max-width: 1280px;
             margin: 0 auto;
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            min-height: 100vh;
+            gap: 1.5rem;
         }
 
         header {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 1.5rem;
-            animation: fadeIn 0.5s ease-out;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
         }
 
         h1 {
-            color: var(--primary-color);
-            font-size: 2.5rem;
-            margin: 0 0 0.5rem 0;
+            color: var(--text-color);
+            font-size: 1.75rem;
+            margin: 0;
+            font-weight: 500;
         }
 
-        header p {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
         .controls {
-            text-align: center;
-            animation: fadeIn 0.5s ease-out 0.1s;
+            display: flex;
+            justify-content: center;
         }
 
         #random-word-btn {
-            background: linear-gradient(45deg, var(--primary-color), #8e44ad);
+            background-color: var(--primary-color);
             color: white;
-            font-weight: bold;
-            font-size: 1.2rem;
+            font-weight: 500;
+            font-size: 1rem;
             border: none;
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(98, 0, 234, 0.2);
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(26, 115, 232, 0.3);
             display: inline-flex;
             align-items: center;
             gap: 0.75rem;
-            min-width: 200px;
+            min-width: 140px;
             justify-content: center;
         }
         #random-word-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(98, 0, 234, 0.3);
+            background-color: var(--primary-variant);
+            box-shadow: 0 2px 5px rgba(26, 115, 232, 0.4);
+        }
+        #random-word-btn:active {
+            box-shadow: 0 1px 2px rgba(26, 115, 232, 0.3);
         }
         #random-word-btn:disabled {
             cursor: not-allowed;
-            background: #9e9e9e;
+            background-color: #9e9e9e;
             box-shadow: none;
-            transform: none;
         }
         .spinner {
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: #fff;
             animation: spin 1s ease-in-out infinite;
@@ -110,74 +135,88 @@
         #random-word-btn.loading .spinner { display: block; }
         #random-word-btn.loading .btn-text { display: none; }
 
-        main {
+        .content-grid {
             display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: 2rem;
-            align-items: flex-start;
+            grid-template-columns: 1fr 1.25fr;
+            gap: 1.5rem;
+            flex: 1;
+        }
+
+        @media (max-width: 900px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .content-section {
             display: none;
+            height: 100%;
         }
         .content-section.active {
-            display: block;
-            animation: fadeIn 0.6s ease-out forwards;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px var(--shadow-color);
+            overflow: hidden;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .word-info-card {
-            background-color: var(--surface-color);
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px var(--shadow-color);
-            position: sticky;
-            top: 2rem;
+            padding: 1.5rem;
         }
 
         #display-word {
-            font-size: 4rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .word-main {
+            font-size: 3.5rem;
             font-weight: 700;
-            color: var(--primary-variant);
-            margin: 0;
+            color: var(--text-color);
             line-height: 1.2;
             font-family: 'Noto Sans JP', sans-serif;
             text-align: center;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 1rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: baseline;
-            justify-content: center;
-            gap: 1rem;
         }
 
         .word-reading {
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-family: 'Noto Sans JP', sans-serif;
-            color: var(--secondary-color);
+            color: var(--text-secondary);
             font-weight: 400;
+            margin-top: 0.5rem;
         }
 
-        /* Simplified word details styles */
         .word-details {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             text-align: center;
         }
 
         .word-meanings {
             background-color: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border-left: 4px solid var(--primary-color);
+            padding: 1.25rem;
+            border-radius: 8px;
             margin: 1rem 0;
             text-align: center;
         }
 
         .simple-meanings {
-            font-size: 1.2rem;
+            font-size: 1.125rem;
             color: var(--text-color);
             line-height: 1.6;
             margin: 0;
+            font-weight: 400;
         }
 
         .word-tags {
@@ -189,45 +228,53 @@
         }
 
         .tag {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            background-color: #e8f0fe;
+            color: var(--primary-color);
+            padding: 0.375rem 0.75rem;
+            border-radius: 16px;
+            font-size: 0.75rem;
             font-weight: 500;
         }
 
-        .tag.jlpt {
-            background-color: #ff6b35;
+        .tag.jlpt, .tag.common {
+            background-color: #e6f4ea;
+            color: var(--success-color);
         }
 
-        .tag.common {
-            background-color: #4caf50;
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: var(--text-color);
+            margin: 0 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
         }
         
         #kanji-breakdown {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .kanji-card {
-            background-color: #fafafa;
-            border-left: 5px solid var(--secondary-color);
+            background-color: #f8f9fa;
             padding: 1rem;
             border-radius: 8px;
             display: flex;
             align-items: center;
             gap: 1rem;
-            transition: transform 0.2s;
+            transition: all 0.2s ease;
+        }
+        .kanji-card:hover {
+            background-color: #f1f3f4;
         }
         .kanji-char {
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-family: 'Noto Sans JP', sans-serif;
             color: var(--primary-color);
-            background-color: #e9e0f9;
-            width: 60px;
-            height: 60px;
+            background-color: #e8f0fe;
+            width: 50px;
+            height: 50px;
             display: grid;
             place-items: center;
             border-radius: 8px;
@@ -235,25 +282,24 @@
         }
         .kanji-details { flex-grow: 1; }
         .kanji-meaning {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 500;
-            margin: 0;
+            margin: 0 0 0.25rem 0;
         }
         .kanji-rtk {
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             color: var(--text-secondary);
             margin: 0;
-            font-style: italic;
         }
         
         .error-message {
-            background: #ffebee;
-            border-left: 4px solid #f44336;
+            background: #fce8e6;
             padding: 1rem;
             border-radius: 8px;
-            color: #d32f2f;
+            color: var(--error-color);
             margin: 1rem 0;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
+            border-left: 3px solid var(--error-color);
         }
 
         .retry-button {
@@ -261,44 +307,36 @@
             color: white;
             border: none;
             padding: 0.5rem 1rem;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             margin-top: 0.5rem;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
+            transition: background 0.2s ease;
         }
 
         .retry-button:hover {
             background: var(--primary-variant);
         }
         
-        /* === IMMERSION KIT STYLES === */
-        #anki-immersion-container {
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            box-shadow: 0 8px 30px var(--shadow-color);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            color: var(--text-color);
-        }
+        /* Immersion Kit Styles */
         .immersion-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1rem 1.5rem;
-            background-color: var(--surface-color);
             border-bottom: 1px solid var(--border-color);
         }
         .immersion-title {
-            color: var(--primary-color);
-            font-weight: 700;
-            font-size: 1.2rem;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 1.125rem;
         }
         .immersion-content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             position: relative;
-            background-color: var(--bg-color);
-            min-height: 300px;
+            min-height: 400px;
         }
         .immersion-state-overlay {
             display: flex;
@@ -306,39 +344,84 @@
             align-items: center;
             padding: 2rem;
             text-align: center;
-            min-height: 250px;
+            flex: 1;
             flex-direction: column;
             gap: 1rem;
         }
-        .immersion-state-message { color: var(--text-secondary); font-size: 1rem; }
+        .immersion-state-message { 
+            color: var(--text-secondary); 
+            font-size: 1rem; 
+        }
         .immersion-example-content {
             display: none;
             flex-direction: column;
-            align-items: center;
-            padding: 1.5rem;
-            gap: 1rem;
+            height: 100%;
         }
-        .image-container { position: relative; }
+        
+        /* CHANGE: Increased image container height */
+        .image-container { 
+            position: relative;
+            width: 100%;
+            height: 280px; /* Increased from 240px */
+            overflow: hidden;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .example-image {
             max-width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px var(--shadow-color);
-            cursor: pointer;
-            transition: transform 0.2s;
+            max-height: 100%;
+            object-fit: contain;
+            transition: opacity 0.3s ease;
         }
-        .example-image:hover { transform: scale(1.03); }
+        .example-image.loading {
+            opacity: 0;
+        }
+        .example-text-container {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 180px;
+        }
         .example-sentence {
             font-family: 'Noto Sans JP', sans-serif;
             font-size: 1.5rem;
             text-align: center;
             line-height: 1.5;
+            margin: 0 0 1rem 0;
         }
         .example-translation {
             color: var(--text-secondary);
             font-size: 1rem;
             text-align: center;
+            margin: 0;
             font-style: italic;
         }
+        .ik-btn-overlay {
+            position: absolute; 
+            bottom: 1rem; 
+            right: 1rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+            width: 44px; 
+            height: 44px;
+            border-radius: 50%; 
+            cursor: pointer;
+            display: grid; 
+            place-items: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .ik-btn-overlay:hover { 
+            background-color: white; 
+            transform: scale(1.05); 
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+        
         .regular-nav {
             display: none;
             justify-content: space-between;
@@ -347,114 +430,134 @@
             border-top: 1px solid var(--border-color);
             background-color: var(--surface-color);
         }
-        .example-counter { color: var(--text-secondary); font-weight: 500; }
+        .example-counter { 
+            color: var(--text-secondary); 
+            font-weight: 500; 
+            font-size: 0.875rem;
+        }
+        .nav-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
         .ik-btn {
-            background-color: #e0e0e0;
-            color: var(--text-color);
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 1rem;
             transition: all 0.2s ease;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
         }
-        .ik-btn:hover { background-color: #d1d1d1; }
-        .ik-btn-overlay {
-            position: absolute; bottom: 1rem; right: 1rem;
-            background-color: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(5px);
+        .ik-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        .ik-btn:hover { 
+            background-color: #f8f9fa;
             color: var(--primary-color);
-            border: 1px solid var(--border-color);
-            width: 44px; height: 44px;
-            border-radius: 50%; cursor: pointer;
-            display: grid; place-items: center;
-            transition: all 0.2s ease;
         }
-        .ik-btn-overlay:hover { background-color: white; transform: scale(1.1); }
-        .ik-btn.is-active { background-color: var(--secondary-color); color: black; }
+        .ik-btn.is-active { 
+            background-color: var(--primary-color); 
+            color: white; 
+            border-color: var(--primary-color);
+        }
         
-        /* Responsive Layout */
-        @media (max-width: 900px) {
-            main {
-                grid-template-columns: 1fr;
-            }
-            .word-info-card {
-                position: static;
-            }
-            #display-word {
-                flex-direction: column;
-                gap: 0.5rem;
+        .skeleton-box {
+            display: inline-block;
+            height: 100%;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            background-color: #f6f7f8;
+        }
+        .skeleton-box::after {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            transform: translateX(-100%);
+            background-image: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0,
+                rgba(255, 255, 255, 0.2) 20%,
+                rgba(255, 255, 255, 0.5) 60%,
+                rgba(255, 255, 255, 0)
+            );
+            animation: shimmer 2s infinite;
+            content: '';
+        }
+        
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
             }
         }
+
+        /* Responsive adjustments */
         @media (max-width: 600px) {
-            body { padding: 1rem; }
-            h1 { font-size: 2rem; }
-            #display-word { font-size: 3rem; }
-            #random-word-btn { width: 100%; justify-content: center; }
+            .app-container { padding: 1rem; }
+            h1 { font-size: 1.5rem; }
+            .word-main { font-size: 2.5rem; }
+            .example-sentence { font-size: 1.25rem; }
+            /* CHANGE: Increased mobile image height */
+            .image-container { height: 220px; } /* Increased from 200px */
+            .example-text-container { padding: 1rem; min-height: 160px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="app-container">
         <header>
-            <h1>Japanese Dojo</h1>
-            <p>Generate a random word, see its meaning, reading, kanji breakdown, and explore real-world sentence examples from anime and dramas.</p>
+            <div class="logo">
+                <div class="logo-icon">日</div>
+                <h1>Japanese Dojo</h1>
+            </div>
         </header>
         
         <div class="controls">
             <button id="random-word-btn">
                 <div class="spinner"></div>
-                <span class="btn-text">New Word</span>
+                <span class="btn-text">Discover New Word</span>
             </button>
         </div>
 
-        <main>
+        <div class="content-grid">
             <section id="word-info-section" class="content-section">
-                <div class="word-info-card">
-                    <h2 id="display-word">
+                <div class="card word-info-card">
+                    <div id="display-word">
                         <span class="word-main">日本語</span>
                         <span class="word-reading"></span>
-                    </h2>
+                    </div>
                     <div class="word-details" id="word-details"></div>
+                    <h3 class="section-title">Kanji Breakdown</h3>
                     <div id="kanji-breakdown"></div>
                 </div>
             </section>
             
             <section id="immersion-section" class="content-section">
-                <div id="anki-immersion-container">
+                <div class="card" id="anki-immersion-container">
                     <!-- Immersion Kit UI will be generated here -->
                 </div>
             </section>
-        </main>
+        </div>
     </div>
 
     <script>
     'use strict';
-    // =================================================================================
-    // CONFIGURATION & DATA
-    // =================================================================================
-    
     let KANJI_DATA = [];
     let WORD_LIST = [];
-    // **FIX:** Initialize kanjiMap as an empty Map. It will be populated after fetching data.
     let kanjiMap = new Map();
 
-    // =================================================================================
-    // API FUNCTIONS (Now using local server)
-    // =================================================================================
-
-    /**
-     * A generic fetch wrapper to query our local server proxy.
-     * @param {string} targetUrl - The actual API endpoint to hit.
-     * @param {object} [params] - A key-value object of query parameters.
-     * @returns {Promise<Response>}
-     */
     async function serverFetch(targetUrl, params = {}) {
         const endpoint = targetUrl.includes('jisho.org') ? '/api/jisho' : '/api/immersion-kit';
-        
         const queryString = new URLSearchParams(params).toString();
-
-        // For the generic immersion-kit proxy, we pass the original URL as a parameter
         let fetchUrl;
         if (endpoint === '/api/immersion-kit') {
             const allParams = new URLSearchParams(params);
@@ -463,44 +566,25 @@
         } else {
             fetchUrl = `${endpoint}?${queryString}`;
         }
-        
         return fetch(fetchUrl);
     }
 
     async function fetchWordDetails(word) {
         try {
-            console.log('🔍 Fetching word details from Jisho for:', word);
-            
             const response = await serverFetch('https://jisho.org/api/v1/search/words', { keyword: word });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             const data = await response.json();
-            console.log('📚 Jisho API response:', data);
-            
             if (data.data && data.data.length > 0) {
-                const entry = data.data[0]; // Get the first (most relevant) result
-                
-                // Extract reading from the japanese array properly
-                const japaneseEntry = entry.japanese && entry.japanese.length > 0 ? entry.japanese[0] : {};
-                console.log('🎌 Japanese entry:', japaneseEntry);
-                
-                const wordData = {
-                    word: japaneseEntry.word || word,
-                    reading: japaneseEntry.reading || '',
+                const entry = data.data.find(d => d.japanese[0].word === word) || data.data[0];
+                return {
+                    word: entry.japanese[0]?.word || word,
+                    reading: entry.japanese[0]?.reading || '',
                     isCommon: entry.is_common,
                     jlpt: entry.jlpt || [],
                     firstSense: entry.senses && entry.senses.length > 0 ? entry.senses[0] : null,
                     tags: entry.tags || []
                 };
-                
-                console.log('✅ Processed word data:', wordData);
-                return wordData;
             }
-            
-            console.log('❌ No data found for word:', word);
             return null;
         } catch (error) {
             console.error('❌ Jisho API Error:', error);
@@ -512,195 +596,111 @@
         const wordDetailsEl = document.getElementById('word-details');
         const wordMainEl = document.querySelector('.word-main');
         const wordReadingEl = document.querySelector('.word-reading');
-        
         if (!wordData) {
             wordDetailsEl.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Word details not available</p>';
-            wordMainEl.textContent = 'Unknown';
-            wordReadingEl.textContent = '';
-            return;
+            wordMainEl.textContent = 'Unknown'; wordReadingEl.textContent = ''; return;
         }
-
-        // Update the word and reading display
         wordMainEl.textContent = wordData.word;
-        
-        // Always show reading if it exists and is different from the word
-        console.log('📖 Word:', wordData.word, 'Reading:', wordData.reading);
-        if (wordData.reading && wordData.reading !== wordData.word) {
-            wordReadingEl.textContent = `(${wordData.reading})`;
-            console.log('✅ Displaying reading:', wordData.reading);
-        } else {
-            wordReadingEl.textContent = '';
-            console.log('❌ No reading to display');
-        }
-
+        wordReadingEl.textContent = (wordData.reading && wordData.reading !== wordData.word) ? `(${wordData.reading})` : '';
         let html = '';
-
-        // Show only the simple meanings - no headers, no parts of speech
         if (wordData.firstSense && wordData.firstSense.english_definitions) {
-            const definitions = wordData.firstSense.english_definitions;
-            const meaningsList = definitions.join(', ');
-            
-            html += `
-                <div class="word-meanings">
-                    <p class="simple-meanings">${meaningsList}</p>
-                </div>
-            `;
+            const meaningsList = wordData.firstSense.english_definitions.join(', ');
+            html += `<div class="word-meanings"><p class="simple-meanings">${meaningsList}</p></div>`;
         }
-
-        // Show tags (JLPT, common, etc.)
         const tags = [];
         if (wordData.isCommon) tags.push('<span class="tag common">Common</span>');
-        if (wordData.jlpt && wordData.jlpt.length > 0) {
-            wordData.jlpt.forEach(level => {
-                tags.push(`<span class="tag jlpt">${level.toUpperCase()}</span>`);
-            });
-        }
-        if (wordData.tags && wordData.tags.length > 0) {
-            wordData.tags.forEach(tag => {
-                tags.push(`<span class="tag">${tag}</span>`);
-            });
-        }
-
-        if (tags.length > 0) {
-            html += `<div class="word-tags">${tags.join('')}</div>`;
-        }
-
+        if (wordData.jlpt.length > 0) { wordData.jlpt.forEach(level => tags.push(`<span class="tag jlpt">${level.toUpperCase()}</span>`)); }
+        if (wordData.tags.length > 0) { wordData.tags.forEach(tag => tags.push(`<span class="tag">${tag}</span>`)); }
+        if (tags.length > 0) { html += `<div class="word-tags">${tags.join('')}</div>`; }
         wordDetailsEl.innerHTML = html;
     }
 
-    // =================================================================================
-    // The old proxyFetch function is no longer needed and has been removed.
-
-    // =================================================================================
-    // CORE WEB APP LOGIC
-    // =================================================================================
-
     const randomWordBtn = document.getElementById('random-word-btn');
-    const displayWordEl = document.getElementById('display-word');
     const kanjiBreakdownEl = document.getElementById('kanji-breakdown');
     const wordInfoSection = document.getElementById('word-info-section');
     const immersionSection = document.getElementById('immersion-section');
-
     randomWordBtn.addEventListener('click', showRandomWord);
 
     async function showRandomWord() {
-        if (WORD_LIST.length === 0) {
-            console.warn("Word list is not ready yet.");
-            return;
-        }
-
-        randomWordBtn.classList.add('loading');
-        randomWordBtn.disabled = true;
-
-        wordInfoSection.classList.add('active');
-        immersionSection.classList.add('active');
-
-        const randomIndex = Math.floor(Math.random() * WORD_LIST.length);
-        const word = WORD_LIST[randomIndex];
-
-        console.log('🎲 Random word selected:', word);
-
-        // Reset the display
+        if (WORD_LIST.length === 0) return;
+        randomWordBtn.classList.add('loading'); randomWordBtn.disabled = true;
+        wordInfoSection.classList.add('active'); immersionSection.classList.add('active');
+        const word = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
         document.querySelector('.word-main').textContent = word;
         document.querySelector('.word-reading').textContent = '';
         kanjiBreakdownEl.innerHTML = '';
-
         try {
-            // Fetch word details from Jisho
             const wordData = await fetchWordDetails(word);
             displayWordDetails(wordData);
         } catch (error) {
-            console.warn('Failed to fetch word details:', error);
             displayWordDetails(null);
         }
-
-        // Display kanji breakdown
         const uniqueKanji = [...new Set(word.match(/[\u4e00-\u9faf]/g) || [])];
-
         if (uniqueKanji.length > 0) {
             uniqueKanji.forEach(kanji => {
                 const data = kanjiMap.get(kanji);
                 if (data) {
-                    const card = document.createElement('div');
-                    card.className = 'kanji-card';
-                    card.innerHTML = `
-                        <div class="kanji-char">${data.kanji}</div>
-                        <div class="kanji-details">
-                            <h3 class="kanji-meaning">${data.meaning}</h3>
-                            <p class="kanji-rtk">${data.rtk}</p>
-                        </div>
-                    `;
-                    kanjiBreakdownEl.appendChild(card);
+                    kanjiBreakdownEl.innerHTML += `<div class="kanji-card"><div class="kanji-char">${data.kanji}</div><div class="kanji-details"><h3 class="kanji-meaning">${data.meaning}</h3><p class="kanji-rtk">${data.rtk}</p></div></div>`;
                 }
             });
         } else {
             kanjiBreakdownEl.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">This word contains no kanji.</p>`;
         }
-        
         await immersionHandler.fetchExamples(word);
-
-        randomWordBtn.classList.remove('loading');
-        randomWordBtn.disabled = false;
+        randomWordBtn.classList.remove('loading'); randomWordBtn.disabled = false;
     }
 
-    // =================================================================================
-    // IMMERSION KIT HANDLER
-    // =================================================================================
-    
     class ImmersionKitHandler {
+        // CHANGE: Added icon constants
+        ICON_PLAY = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+        ICON_STOP = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>`;
+
         constructor() {
-            this.examples = []; 
-            this.currentIndex = 0; 
-            this.isPlayingAll = false; 
-            this.isLoopingAudio = false;
-            this.container = null; 
-            this.elements = {};
+            this.examples = []; this.currentIndex = 0; this.isPlayingAll = false; this.isLoopingAudio = false;
+            this.container = null; this.elements = {};
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            this.currentAudioSource = null; 
-            this.lastPlayId = 0; 
-            this.currentImageBlobUrl = null;
-            this.deckTitleMap = null;
-            this.initUI();
+            this.currentAudioSource = null; this.lastPlayId = 0; this.currentImageBlobUrl = null;
+            this.deckTitleMap = null; this.initUI();
         }
         
         initUI() {
             this.container = document.getElementById('anki-immersion-container');
-            this.container.innerHTML = this._getInitialHTML();
-            this._cacheElements();
-            this._addEventListeners();
+            this.container.innerHTML = this._getInitialHTML(); this._cacheElements(); this._addEventListeners();
         }
 
         _getInitialHTML() {
+            // CHANGE: Used play icon for the play-all button
             return `
             <div class="immersion-header">
-                <span class="immersion-title">Immersion Kit Examples</span>
+                <span class="immersion-title">Contextual Examples</span>
             </div>
             <div class="immersion-content-wrapper">
                 <div class="immersion-state-overlay">
-                    <p class="immersion-state-message">Generate a word to see examples.</p>
+                    <p class="immersion-state-message">Click "Discover New Word" to see examples</p>
                     <div class="error-details" style="display: none;"></div>
                 </div>
                 <div class="immersion-example-content">
                     <div class="image-container">
-                        <img data-action="play-audio" class="example-image" alt="Example">
-                        <button data-action="play-audio" class="ik-btn-overlay" title="Play Audio">
+                        <div class="skeleton-box"></div>
+                        <img data-action="play-audio" class="example-image" alt="Example" style="display: none;">
+                        <button data-action="play-audio" class="ik-btn-overlay" title="Play Audio" style="display: none;">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
                         </button>
                     </div>
-                    <p class="example-sentence"></p>
-                    <p class="example-translation"></p>
+                    <div class="example-text-container">
+                        <p class="example-sentence"></p>
+                        <p class="example-translation"></p>
+                    </div>
                 </div>
             </div>
-            <div class="immersion-nav-wrapper">
-                <div class="regular-nav">
-                    <span class="example-counter"></span>
-                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <button data-action="prev-example" class="ik-btn" title="Previous">←</button>
-                        <button data-action="next-example" class="ik-btn" title="Next">→</button>
-                        <button data-action="toggle-loop" class="ik-btn" title="Loop audio">🔁</button>
-                        <button data-action="play-all" class="ik-btn" title="Play all">▶️</button>
-                        <button data-action="retry" class="ik-btn" title="Retry" style="display: none;">🔄</button>
-                    </div>
+            <div class="regular-nav">
+                <span class="example-counter"></span>
+                <div class="nav-controls">
+                    <button data-action="prev-example" class="ik-btn" title="Previous" aria-label="Previous example">←</button>
+                    <button data-action="next-example" class="ik-btn" title="Next" aria-label="Next example">→</button>
+                    <button data-action="toggle-loop" class="ik-btn" title="Loop audio" aria-label="Loop audio">🔁</button>
+                    <button data-action="play-all" class="ik-btn" title="Play all" aria-label="Play all examples">${this.ICON_PLAY}</button>
+                    <button data-action="retry" class="ik-btn" title="Retry" style="display: none;">🔄</button>
                 </div>
             </div>`;
         }
@@ -708,39 +708,21 @@
         setTextContent(element, text) { if (element) element.textContent = text || ''; }
 
         _cacheElements() {
-            const selectors = { 
-                title: '.immersion-title', 
-                stateOverlay: '.immersion-state-overlay', 
-                stateMessage: '.immersion-state-message', 
-                errorDetails: '.error-details',
-                exampleContent: '.immersion-example-content', 
-                image: '.example-image', 
-                sentence: '.example-sentence', 
-                translation: '.example-translation', 
-                regularNav: '.regular-nav', 
-                counter: '.example-counter', 
-                playAllBtn: '[data-action="play-all"]', 
-                loopBtn: '[data-action="toggle-loop"]',
-                retryBtn: '[data-action="retry"]'
+            const sel = s => this.container.querySelector(s);
+            this.elements = { 
+                title: sel('.immersion-title'), stateOverlay: sel('.immersion-state-overlay'), stateMessage: sel('.immersion-state-message'), 
+                errorDetails: sel('.error-details'), exampleContent: sel('.immersion-example-content'), image: sel('.example-image'), 
+                skeleton: sel('.skeleton-box'), sentence: sel('.example-sentence'), translation: sel('.example-translation'), 
+                regularNav: sel('.regular-nav'), counter: sel('.example-counter'), playAllBtn: sel('[data-action="play-all"]'), 
+                loopBtn: sel('[data-action="toggle-loop"]'), retryBtn: sel('[data-action="retry"]'), audioBtn: sel('.ik-btn-overlay')
             };
-            for (const key in selectors) { 
-                this.elements[key] = this.container.querySelector(selectors[key]); 
-            }
         }
 
         _addEventListeners() {
             this.container.addEventListener('click', (e) => {
-                const actionTarget = e.target.closest('[data-action]');
-                if (!actionTarget) return;
+                const actionTarget = e.target.closest('[data-action]'); if (!actionTarget) return;
                 const action = actionTarget.dataset.action;
-                const actionMap = {
-                    'play-audio': () => this.playCurrentAudio(),
-                    'prev-example': () => this.navigate(-1),
-                    'next-example': () => this.navigate(1),
-                    'toggle-loop': () => this.toggleLoop(),
-                    'play-all': () => this.handlePlayAll(),
-                    'retry': () => this.retryCurrentFetch(),
-                };
+                const actionMap = {'play-audio':()=>this.playCurrentAudio(),'prev-example':()=>this.navigate(-1),'next-example':()=>this.navigate(1),'toggle-loop':()=>this.toggleLoop(),'play-all':()=>this.handlePlayAll(),'retry':()=>this.retryCurrentFetch()};
                 actionMap[action]?.();
             });
         }
@@ -755,44 +737,30 @@
 
         _showError(mainMessage, details = '', showRetry = true) {
             this.elements.stateMessage.textContent = mainMessage;
-            
             if (details) {
-                this.elements.errorDetails.innerHTML = `
-                    <div class="error-message">
-                        <strong>Error Details:</strong><br>
-                        ${details}
-                        ${showRetry ? '<br><button class="retry-button" onclick="immersionHandler.retryCurrentFetch()">Try Again</button>' : ''}
-                    </div>
-                `;
+                this.elements.errorDetails.innerHTML = `<div class="error-message"><strong>Error Details:</strong><br>${details}${showRetry ? '<br><button class="retry-button" onclick="immersionHandler.retryCurrentFetch()">Try Again</button>' : ''}</div>`;
                 this.elements.errorDetails.style.display = 'block';
             }
-            
             this._setLoadingState(true, '', showRetry);
         }
 
         async retryCurrentFetch() {
-            if (this.lastSearchWord) {
-                this.elements.errorDetails.style.display = 'none';
-                await this.fetchExamples(this.lastSearchWord);
-            }
+            if (this.lastSearchWord) { this.elements.errorDetails.style.display = 'none'; await this.fetchExamples(this.lastSearchWord); }
         }
 
         _updateContent() {
             if (this.examples.length === 0) return;
             const example = this.examples[this.currentIndex];
-            this._loadImage(example.full_image_url);
-            this.setTextContent(this.elements.sentence, example.sentence);
-            this.setTextContent(this.elements.translation, example.translation);
-            this._updateCounter();
+            this.elements.skeleton.style.display = 'block'; this.elements.image.style.display = 'none'; this.elements.audioBtn.style.display = 'none';
+            this._loadImage(example.full_image_url); this.setTextContent(this.elements.sentence, example.sentence); this.setTextContent(this.elements.translation, example.translation); this._updateCounter();
         }
 
-        _updateCounter() { this.elements.counter.textContent = `${this.currentIndex + 1}/${this.examples.length}`; }
+        _updateCounter() { this.elements.counter.textContent = `${this.currentIndex + 1} of ${this.examples.length}`; }
         _updateNavVisibility() { this.elements.regularNav.style.display = this.examples.length > 0 ? 'flex' : 'none'; }
 
         navigate(direction) {
-            if (this.examples.length === 0) return;
-            this.stopCurrentAudio(); 
-            this.toggleLoop(false);
+            if (this.examples.length < 2) return;
+            this.stopCurrentAudio(); this.toggleLoop(false);
             this.currentIndex = (this.currentIndex + direction + this.examples.length) % this.examples.length;
             this._updateContent();
             const example = this.examples[this.currentIndex];
@@ -801,215 +769,97 @@
 
         async _ensureMetadata() {
             if (this.deckTitleMap) return;
-            
             try {
-                console.log('📋 Fetching metadata...');
                 const response = await serverFetch('https://apiv2.immersionkit.com/index_meta');
-                const data = await response.json();
-                this.deckTitleMap = data.data || {};
-                console.log('✅ Metadata loaded');
-            } catch (error) { 
-                console.warn('⚠️ Metadata fetch failed:', error);
-                this.deckTitleMap = {}; 
-            }
+                this.deckTitleMap = (await response.json()).data || {};
+            } catch (error) { this.deckTitleMap = {}; }
         }
 
         async fetchExamples(word) {
-            this.lastSearchWord = word;
-            this.elements.errorDetails.style.display = 'none';
-            this.setTextContent(this.elements.title, `Examples for "${word}"`);
-            this.stopCurrentAudio(); 
-            this.toggleLoop(false);
-            
-            const sanitizedWord = word.replace(/[^\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}\s]/gu, '');
-            if (!sanitizedWord) { 
-                this.examples = []; 
-                this._setLoadingState(true, 'Invalid keyword.', false); 
-                return; 
-            }
-
+            this.lastSearchWord = word; this.elements.errorDetails.style.display = 'none'; this.setTextContent(this.elements.title, `Examples for "${word}"`);
+            this.stopCurrentAudio(); this.toggleLoop(false);
+            if (!word.replace(/[^\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}\s]/gu, '')) { this.examples = []; this._setLoadingState(true, 'Invalid keyword.', false); return; }
             try {
-                this._setLoadingState(true, 'Fetching examples from Immersion Kit...');
-                
+                this._setLoadingState(true, 'Finding contextual examples...');
                 await this._ensureMetadata();
-                
-                console.log('🔍 Searching for examples...');
-                
-                const response = await serverFetch('https://apiv2.immersionkit.com/search', {
-                    q: sanitizedWord,
-                    exactMatch: 'false',
-                    limit: '50',
-                    sort: 'sentence_length:asc'
-                });
-                const data = await response.json();
-                
-                const rawExamples = data.examples || [];
-                console.log(`📚 Found ${rawExamples.length} examples`);
-                
+                const response = await serverFetch('https://apiv2.immersionkit.com/search', { q: word, exactMatch: 'false', limit: '50', sort: 'sentence_length:asc' });
+                const rawExamples = (await response.json()).examples || [];
                 if (rawExamples.length > 0) {
                     const linodeBaseUrl = 'https://us-southeast-1.linodeobjects.com/immersionkit/media/';
-                    
                     this.examples = rawExamples.map(ex => {
-                        const slug = ex.title || '';
-                        const prettyTitle = this.deckTitleMap?.[slug]?.title || slug;
-                        const mediaType = ex.id?.split('_')[0] || '';
-                        return {
-                            ...ex,
-                            full_image_url: ex.image && mediaType && prettyTitle ? `${linodeBaseUrl}${mediaType}/${prettyTitle}/media/${ex.image}` : '',
-                            full_sound_url: ex.sound && mediaType && prettyTitle ? `${linodeBaseUrl}${mediaType}/${prettyTitle}/media/${ex.sound}` : ''
-                        };
+                        const slug = ex.title || ''; const prettyTitle = this.deckTitleMap?.[slug]?.title || slug; const mediaType = ex.id?.split('_')[0] || '';
+                        return { ...ex, full_image_url: ex.image ? `${linodeBaseUrl}${mediaType}/${prettyTitle}/media/${ex.image}` : '', full_sound_url: ex.sound ? `${linodeBaseUrl}${mediaType}/${prettyTitle}/media/${ex.sound}` : '' };
                     });
-
-                    this.currentIndex = 0;
-                    this._setLoadingState(false);
-                    this._updateContent();
-                    
-                    setTimeout(() => {
-                        if (this.examples[0]?.full_sound_url) {
-                            this.playAudio(this.examples[0].full_sound_url);
-                        }
-                    }, 150);
-                    
-                } else {
-                    this._setLoadingState(true, 'No examples found for this word.', false);
-                }
-                
-            } catch (error) {
-                console.error('💥 Fetch error:', error);
-                
-                let errorMessage = "Failed to fetch examples from Immersion Kit.";
-                let technicalDetails = error.message;
-                
-                if (error.message.includes("rate limited") || error.message.includes("429")) {
-                    errorMessage = "Rate limited by the service.";
-                    technicalDetails = "Too many requests. Please wait a moment and try again.";
-                } else if (error.message.includes("CORS")) {
-                    errorMessage = "Network access blocked.";
-                    technicalDetails = "Browser security policies are blocking the request. Try refreshing the page.";
-                } else if (error.message.includes("timeout") || error.message.includes("aborted")) {
-                    errorMessage = "Request timed out.";
-                    technicalDetails = "The request took too long. Check your internet connection.";
-                }
-                
-                this._showError(errorMessage, technicalDetails, true);
-            }
+                    this.currentIndex = 0; this._setLoadingState(false); this._updateContent();
+                    if (this.examples[0]?.full_sound_url) setTimeout(() => this.playAudio(this.examples[0].full_sound_url), 150);
+                } else { this._setLoadingState(true, 'No examples found for this word.', false); }
+            } catch (error) { this._showError("Failed to fetch examples.", error.message, true); }
         }
 
         _loadImage(url) {
-            if (this.currentImageBlobUrl) URL.revokeObjectURL(this.currentImageBlobUrl);
-            this.elements.image.src = '';
-            if (!url) return;
-            
-            serverFetch(url)
-                .then(response => response.blob())
-                .then(blob => {
-                    this.currentImageBlobUrl = URL.createObjectURL(blob);
-                    this.elements.image.src = this.currentImageBlobUrl;
-                })
-                .catch(error => {
-                    console.warn("Image load failed:", error);
-                });
+            if (this.currentImageBlobUrl) { URL.revokeObjectURL(this.currentImageBlobUrl); this.currentImageBlobUrl = null; }
+            if (!url) { this.elements.skeleton.style.display = 'none'; this.elements.image.style.display = 'none'; this.elements.audioBtn.style.display = 'none'; return; }
+            this.elements.image.classList.add('loading');
+            serverFetch(url).then(response => response.blob()).then(blob => {
+                this.currentImageBlobUrl = URL.createObjectURL(blob); this.elements.image.src = this.currentImageBlobUrl;
+                this.elements.image.onload = () => {
+                    this.elements.skeleton.style.display = 'none'; this.elements.image.style.display = 'block'; this.elements.audioBtn.style.display = 'grid'; this.elements.image.classList.remove('loading');
+                };
+            }).catch(error => {
+                console.warn("Image load failed:", error); this.elements.skeleton.style.display = 'none'; this.elements.image.style.display = 'none'; this.elements.audioBtn.style.display = 'none';
+            });
         }
         
-        playCurrentAudio() { 
-            this.toggleLoop(false); 
-            if (this.examples.length > 0) this.playAudio(this.examples[this.currentIndex].full_sound_url); 
-        }
-        
-        stopCurrentAudio() { 
-            if (this.currentAudioSource) { 
-                try { 
-                    this.currentAudioSource.onended = null; 
-                    this.currentAudioSource.stop(0); 
-                } catch (e) {} 
-                this.currentAudioSource = null; 
-            }
-        }
+        playCurrentAudio() { this.toggleLoop(false); if (this.examples.length > 0) this.playAudio(this.examples[this.currentIndex].full_sound_url); }
+        stopCurrentAudio() { if (this.currentAudioSource) { try { this.currentAudioSource.onended = null; this.currentAudioSource.stop(0); } catch (e) {} this.currentAudioSource = null; } }
 
         async playAudio(url) {
             return new Promise((resolve) => {
                 if (!url) return resolve();
-                
-                const playId = ++this.lastPlayId;
-                this.stopCurrentAudio();
-                
-                if (this.audioContext.state === 'suspended') {
-                    this.audioContext.resume();
-                }
-                
-                serverFetch(url)
-                    .then(response => response.arrayBuffer())
-                    .then(arrayBuffer => {
+                const playId = ++this.lastPlayId; this.stopCurrentAudio();
+                if (this.audioContext.state === 'suspended') this.audioContext.resume();
+                serverFetch(url).then(response => response.arrayBuffer()).then(arrayBuffer => {
+                    if (playId !== this.lastPlayId) return resolve();
+                    this.audioContext.decodeAudioData(arrayBuffer, (buffer) => {
                         if (playId !== this.lastPlayId) return resolve();
-                        
-                        this.audioContext.decodeAudioData(arrayBuffer,
-                            (buffer) => {
-                                if (playId !== this.lastPlayId) return resolve();
-                                const source = this.audioContext.createBufferSource();
-                                source.buffer = buffer; 
-                                source.connect(this.audioContext.destination); 
-                                source.start(0);
-                                source.onended = () => { 
-                                    if (this.currentAudioSource === source) this.currentAudioSource = null; 
-                                    resolve(); 
-                                };
-                                this.currentAudioSource = source;
-                            },
-                            (error) => {
-                                console.warn("Audio decode failed:", error);
-                                resolve();
-                            }
-                        );
-                    })
-                    .catch(error => {
-                        console.warn("Audio fetch failed:", error);
-                        resolve();
-                    });
+                        const source = this.audioContext.createBufferSource();
+                        source.buffer = buffer; source.connect(this.audioContext.destination); source.start(0);
+                        source.onended = () => { if (this.currentAudioSource === source) this.currentAudioSource = null; resolve(); };
+                        this.currentAudioSource = source;
+                    }, () => resolve());
+                }).catch(() => resolve());
             });
         }
 
         toggleLoop(forceState) {
             this.isLoopingAudio = forceState !== undefined ? forceState : !this.isLoopingAudio;
-            if (this.isLoopingAudio) { 
-                if (this.isPlayingAll) this.handlePlayAll(false); 
-                this.audioLoop(); 
-            } else { 
-                this.stopCurrentAudio(); 
-            }
+            if (this.isLoopingAudio) { if (this.isPlayingAll) this.handlePlayAll(false); this.audioLoop(); } else { this.stopCurrentAudio(); }
             this.elements.loopBtn.classList.toggle('is-active', this.isLoopingAudio);
         }
         
         async audioLoop() {
-            if (!this.isLoopingAudio) return;
+            if (!this.isLoopingAudio || !this.examples[this.currentIndex]) return;
             const example = this.examples[this.currentIndex];
             if (example?.full_sound_url) {
                 await this.playAudio(example.full_sound_url);
                 if (this.isLoopingAudio) setTimeout(() => this.audioLoop(), 100);
-            } else { 
-                this.toggleLoop(false); 
-            }
+            } else { this.toggleLoop(false); }
         }
         
         handlePlayAll(forceState) {
             this.isPlayingAll = forceState !== undefined ? forceState : !this.isPlayingAll;
-            if (this.isPlayingAll) { 
-                this.toggleLoop(false); 
-                this.playAllSequence(); 
-            } else { 
-                this.stopCurrentAudio(); 
-            }
-            this.elements.playAllBtn.textContent = this.isPlayingAll ? '⏹️' : '▶️';
+            if (this.isPlayingAll) { this.toggleLoop(false); this.playAllSequence(); } else { this.stopCurrentAudio(); }
+            // CHANGE: Swap icon and ARIA label instead of text
+            this.elements.playAllBtn.innerHTML = this.isPlayingAll ? this.ICON_STOP : this.ICON_PLAY;
+            this.elements.playAllBtn.setAttribute('aria-label', this.isPlayingAll ? 'Stop playing all' : 'Play all examples');
+            this.elements.playAllBtn.classList.toggle('is-active', this.isPlayingAll);
         }
         
         async playAllSequence() {
-            if (this.examples.length === 0) { 
-                this.handlePlayAll(false); 
-                return; 
-            }
+            if (this.examples.length === 0) { this.handlePlayAll(false); return; }
             let initialIndex = this.currentIndex;
             for (let i = 0; i < this.examples.length && this.isPlayingAll; i++) {
-                this.currentIndex = (initialIndex + i) % this.examples.length;
-                this._updateContent();
+                this.currentIndex = (initialIndex + i) % this.examples.length; this._updateContent();
                 const example = this.examples[this.currentIndex];
                 if (example?.full_sound_url) {
                     await this.playAudio(example.full_sound_url);
@@ -1019,56 +869,25 @@
             this.handlePlayAll(false);
         }
     }
-    
     const immersionHandler = new ImmersionKitHandler();
 
-    // =================================================================================
-    // INITIALIZATION
-    // =================================================================================
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('🎌 Japanese Dojo loaded. Fetching initial data...');
-
-        // **FIX:** Use Promise.all to wait for both data files to load before starting the app.
         Promise.all([
-            fetch("word_list.json").then(res => {
-                if (!res.ok) throw new Error(`word_list.json: ${res.statusText}`);
-                return res.json();
-            }),
-            fetch("kanji_meanings.json").then(res => {
-                if (!res.ok) throw new Error(`kanji_meanings.json: ${res.statusText}`);
-                return res.json();
-            })
+            fetch("word_list.json").then(res => res.ok ? res.json() : Promise.reject(res)),
+            fetch("kanji_meanings.json").then(res => res.ok ? res.json() : Promise.reject(res))
         ])
         .then(([wordData, kanjiData]) => {
-            console.log("✅ Both JSON files loaded successfully.");
-            
-            // Assign data
-            WORD_LIST = wordData;
-            KANJI_DATA = kanjiData;
-            
-            // **FIX:** Create the kanjiMap *after* data is loaded to ensure it's not empty.
+            WORD_LIST = wordData; KANJI_DATA = kanjiData;
             kanjiMap = new Map(KANJI_DATA.map(item => [item.kanji, item]));
-            
-            console.log("Loaded WORD_LIST:", WORD_LIST.length, "words");
-            console.log("Created kanjiMap with", kanjiMap.size, "entries");
-            
-            // **FEATURE:** Call showRandomWord() on initial load to display a word immediately.
             showRandomWord();
         })
         .catch(error => {
             console.error("❌ Error loading initial data:", error);
-            // Display a user-friendly error message in the UI
-            const mainContainer = document.querySelector('main');
+            const mainContainer = document.querySelector('.content-grid');
             if (mainContainer) {
-                mainContainer.innerHTML = `<div class="error-message" style="grid-column: 1 / -1;">
-                    <strong>Failed to start the app.</strong><br>
-                    Could not load essential data (word list or kanji info). Please check your internet connection and refresh the page.
-                    <br><small>Details: ${error.message}</small>
-                </div>`;
+                mainContainer.innerHTML = `<div class="error-message" style="grid-column: 1 / -1;"><strong>Failed to start the app.</strong><br>Could not load essential data. Please refresh the page.</div>`;
             }
-            // Disable the button to prevent further errors
-            randomWordBtn.disabled = true;
-            randomWordBtn.querySelector('.btn-text').textContent = 'Error';
+            randomWordBtn.disabled = true; randomWordBtn.querySelector('.btn-text').textContent = 'Error';
         });
     });
     </script>
