@@ -6,8 +6,8 @@ const { URLSearchParams } = require('url');
 const app = express();
 const PORT = process.env.PORT || 7000;
 
-// Serve static files from the root directory, including index.html
-app.use(express.static(path.join(__dirname)));
+// Serve static files under /mokuro path, including index.html
+app.use('/mokuro/visual_novel', express.static(path.join(__dirname)));
 
 // Proxy for Jisho API
 app.get('/api/jisho', async (req, res) => {
