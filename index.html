@@ -89,122 +89,64 @@
             border-radius: var(--border-radius-sm);
         }
 
+        /* --- NEW: Core Layout Structure --- */
         .app-container {
             max-width: 1280px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 1.5rem; /* Reduced padding slightly */
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            gap: 2rem;
+            height: 100vh; /* Changed from min-height to fix viewport */
+            overflow: hidden; /* Prevent body scroll */
             position: relative;
         }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            position: relative;
-        }
-        
-        header::after {
-            content: "";
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background-color: var(--japan-red);
-            border-radius: 3px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .logo-icon {
-            width: 44px;
-            height: 44px;
-            background: linear-gradient(135deg, var(--japan-red) 0%, #9e0022 100%);
-            border-radius: var(--border-radius-md);
-            display: grid;
-            place-items: center;
-            color: white;
-            font-size: 1.75rem;
-            font-weight: 700;
-            box-shadow: 0 4px 10px rgba(188, 0, 45, 0.3);
-        }
-
-        h1 {
-            color: var(--ink-black);
-            font-size: 1.75rem;
-            margin: 0;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--ink-black) 0%, #3a3a3a 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-        }
-
+        /* --- NEW: Floating Action Button (FAB) for New Word --- */
         #random-word-btn {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 60px;
+            height: 60px;
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-variant) 100%);
             color: white;
-            font-weight: 500;
-            font-size: 1rem;
             border: none;
-            padding: 0.875rem 1.75rem;
-            border-radius: 50px;
+            border-radius: 50%;
             cursor: pointer;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 6px 16px rgba(26, 115, 232, 0.35);
             transition: all var(--transition-speed) ease;
-            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.25);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-            min-width: 200px;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
+            z-index: 1000;
         }
         
-        #random-word-btn::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
-        }
-        
-        #random-word-btn:hover::before { left: 100%; }
         #random-word-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(26, 115, 232, 0.3);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(26, 115, 232, 0.4);
         }
+        
         #random-word-btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(26, 115, 232, 0.3);
+            transform: translateY(0) scale(1);
+            box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3);
         }
+
         #random-word-btn:disabled {
             cursor: not-allowed;
             background: #b0b0b0;
             box-shadow: none;
             transform: none;
         }
+
+        .btn-icon {
+            width: 28px;
+            height: 28px;
+            fill: currentColor;
+        }
         
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: #fff;
             animation: spin 1s ease-in-out infinite;
@@ -212,13 +154,17 @@
         }
         
         #random-word-btn.loading .spinner { display: block; }
-        #random-word-btn.loading .btn-text { display: none; }
+        #random-word-btn.loading .btn-icon { display: none; } /* Changed from .btn-text */
 
+        /* --- MODIFIED: Content Grid handles its own scrolling --- */
         .content-grid {
             display: grid;
             grid-template-columns: 1fr 1.25fr;
-            gap: 2rem;
+            gap: 1.5rem; /* Reduced gap slightly */
             flex: 1;
+            overflow-y: auto; /* This is the key change for scrolling */
+            padding: 0.5rem; /* Add some padding for scrollbar */
+            margin: -0.5rem; /* Counteract padding to align with container */
         }
 
         @media (max-width: 900px) {
@@ -488,7 +434,7 @@
         
         .example-image {
             width: 100%; height: 100%;
-            object-fit: cover; /* CHANGED: Ensures image fills the container */
+            object-fit: cover;
             transition: opacity 0.4s ease;
             cursor: pointer;
         }
@@ -592,7 +538,7 @@
         
         @media (max-width: 600px) {
             .app-container { padding: 1rem; gap: 1rem; }
-            h1 { font-size: 1.5rem; }
+            #random-word-btn { bottom: 1rem; right: 1rem; width: 56px; height: 56px; }
             .word-main { font-size: 2.75rem; }
             .word-reading { font-size: 1.25rem; }
             .example-sentence { font-size: 1.25rem; }
@@ -606,19 +552,8 @@
     <div class="japanese-pattern pattern-2">習</div>
     
     <div class="app-container">
-        <header>
-            <div class="logo">
-                <div class="logo-icon">日</div>
-                <h1>Japanese Dojo</h1>
-            </div>
-        </header>
-        
-        <div class="controls">
-            <button id="random-word-btn">
-                <div class="spinner"></div>
-                <span class="btn-text">Discover New Word</span>
-            </button>
-        </div>
+        <!-- HEADER REMOVED -->
+        <!-- CONTROLS DIV REMOVED -->
 
         <div class="content-grid" id="content-grid">
             <section id="word-info-section" class="content-section">
@@ -645,6 +580,14 @@
                 </div>
             </section>
         </div>
+
+        <!-- NEW FLOATING ACTION BUTTON -->
+        <button id="random-word-btn" title="Discover New Word">
+            <div class="spinner"></div>
+            <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M22 15.5c0 1.33-2 2.5-2 2.5s-2-1.17-2-2.5c0-1.1.9-2 2-2s2 .9 2 2zM7.5 2c-1.11 0-2 .89-2 2v1.03c.23-.02.46-.03.7-.03.88 0 1.7.23 2.43.64.59-.26 1.25-.41 1.94-.41 1.18 0 2.25.51 3 1.28.75-.77 1.82-1.28 3-1.28 1.38 0 2.5 1.12 2.5 2.5 0 .61-.22 1.16-.59 1.59.32.22.59.53.59.91 0 .69-.56 1.25-1.25 1.25H10.9c-.06-2.09-1.76-3.75-3.87-3.75-.24 0-.47.02-.7.06V4c0-.55-.45-1-1-1s-1 .45-1 1v.06c-.23.04-.46.06-.7.06-2.11 0-3.81 1.66-3.87 3.75H.25C.11 8.81 0 8.69 0 8.55c0-.38.27-.69.59-.91C.22 7.16 0 6.61 0 6c0-1.38 1.12-2.5 2.5-2.5 1.18 0 2.25.51 3 1.28C6.25 2.51 7.32 2 8.5 2c.35 0 .69.06 1 .16.59-.74 1.54-1.16 2.5-1.16s1.91.42 2.5 1.16c.31-.1.65-.16 1-.16 1.18 0 2.25.51 3 1.28C19.25 2.51 20.32 2 21.5 2c.35 0 .69.06 1 .16.59-.74 1.54-1.16 2.5-1.16s1.91.42 2.5 1.16c.31-.1.65-.16 1-.16.34 0 .67.04 1 .12V4c0-1.11-.89-2-2-2h-1.5zm-1.5 6c0 1.33-2 2.5-2 2.5s-2-1.17-2-2.5c0-1.1.9-2 2-2s2 .9 2 2zM4 15.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-2.5-2-2.5S4 14.17 4 15.5zM15 8c-1.1 0-2 .9-2 2c0 1.33-2 2.5-2 2.5S9 11.33 9 10c0-1.1-.9-2-2-2s-2 .9-2 2c0 1.33-2 2.5-2 2.5S1 11.33 1 10c0-1.1-.9-2-2-2s-2 .9-2 2c0 1.33-2 2.5-2 2.5V19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2v-6.5S20 11.33 20 10c0-1.1-.9-2-2-2s-2 .9-2 2z"/>
+            </svg>
+        </button>
     </div>
 
     <script>
@@ -1020,7 +963,7 @@
                 this.visualizerAnimationId = null;
             }
             this.elements.visualizerContainer.classList.remove('is-playing');
-            this.elements.audioBtn.innerHTML = ICONS.PLAY; // CHANGED: Restore play icon
+            this.elements.audioBtn.innerHTML = ICONS.PLAY;
         }
 
         async playAudio(url) {
@@ -1029,7 +972,7 @@
                 const playId = ++this.lastPlayId;
                 this.stopCurrentAudio();
                 if (this.audioContext.state === 'suspended') this.audioContext.resume();
-                this.elements.audioBtn.innerHTML = ICONS.STOP; // CHANGED: Show stop icon
+                this.elements.audioBtn.innerHTML = ICONS.STOP;
                 
                 serverFetch(url).then(res => res.arrayBuffer()).then(buffer => {
                     if (playId !== this.lastPlayId) return resolve();
@@ -1147,7 +1090,6 @@
             WORD_LIST = wordData;
             KANJI_DATA = kanjiData;
             kanjiMap = new Map(KANJI_DATA.map(item => [item.kanji, item]));
-            // CHANGED: Load the first word on startup for an immediate experience
             showRandomWord();
         })
         .catch(error => {
@@ -1155,7 +1097,7 @@
             const contentGrid = document.getElementById('content-grid');
             contentGrid.innerHTML = `<div class="error-message" style="grid-column: 1 / -1;"><strong>Failed to start the app.</strong><br>Could not load essential data. Please refresh the page.</div>`;
             randomWordBtn.disabled = true;
-            randomWordBtn.querySelector('.btn-text').textContent = 'Error';
+            randomWordBtn.querySelector('.btn-icon').style.display = 'none'; // Hide icon on error
         });
     });
     </script>
