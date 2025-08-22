@@ -89,19 +89,18 @@
             border-radius: var(--border-radius-sm);
         }
 
-        /* --- NEW: Core Layout Structure --- */
         .app-container {
             max-width: 1280px;
             margin: 0 auto;
-            padding: 1.5rem; /* Reduced padding slightly */
+            padding: 1.5rem 1rem;
             display: flex;
             flex-direction: column;
-            height: 100vh; /* Changed from min-height to fix viewport */
-            overflow: hidden; /* Prevent body scroll */
+            min-height: 100vh;
+            gap: 1.5rem;
             position: relative;
         }
 
-        /* --- NEW: Floating Action Button (FAB) for New Word --- */
+        /* --- MODIFIED: Floating Action Button Styles --- */
         #random-word-btn {
             position: fixed;
             bottom: 1.5rem;
@@ -118,6 +117,7 @@
             box-shadow: 0 6px 16px rgba(26, 115, 232, 0.35);
             transition: all var(--transition-speed) ease;
             z-index: 1000;
+            overflow: hidden; /* Keep this to ensure spinner stays within bounds */
         }
         
         #random-word-btn:hover {
@@ -136,16 +136,16 @@
             box-shadow: none;
             transform: none;
         }
-
-        .btn-icon {
-            width: 28px;
-            height: 28px;
-            fill: currentColor;
-        }
         
-        .spinner {
+        /* --- ADDED: Rule to correctly size the SVG icon --- */
+        #random-word-btn .btn-icon {
             width: 28px;
             height: 28px;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: #fff;
@@ -154,17 +154,13 @@
         }
         
         #random-word-btn.loading .spinner { display: block; }
-        #random-word-btn.loading .btn-icon { display: none; } /* Changed from .btn-text */
+        #random-word-btn.loading .btn-icon { display: none; }
 
-        /* --- MODIFIED: Content Grid handles its own scrolling --- */
         .content-grid {
             display: grid;
             grid-template-columns: 1fr 1.25fr;
-            gap: 1.5rem; /* Reduced gap slightly */
+            gap: 1.5rem;
             flex: 1;
-            overflow-y: auto; /* This is the key change for scrolling */
-            padding: 0.5rem; /* Add some padding for scrollbar */
-            margin: -0.5rem; /* Counteract padding to align with container */
         }
 
         @media (max-width: 900px) {
@@ -200,15 +196,15 @@
             transform: translateY(-5px);
         }
 
-        .word-info-card { padding: 1.75rem; }
+        .word-info-card { padding: 1.5rem; }
 
         #display-word {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 1rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1.25rem;
             border-bottom: 1px solid var(--border-color);
             position: relative;
             flex-direction: column;
@@ -227,7 +223,7 @@
         }
 
         .word-main {
-            font-size: 4rem;
+            font-size: 3.5rem;
             font-weight: 700;
             color: var(--ink-black);
             line-height: 1.1;
@@ -236,7 +232,7 @@
         }
 
         .word-reading {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-family: 'Noto Sans JP', sans-serif;
             color: var(--text-secondary);
             font-weight: 400;
@@ -270,9 +266,9 @@
 
         .word-meanings {
             background: linear-gradient(to right, #f8f9fa, #f0f2f5);
-            padding: 1.5rem;
+            padding: 1.25rem;
             border-radius: var(--border-radius-md);
-            margin: 1.5rem 0;
+            margin: 1.25rem 0;
             text-align: center;
             border-left: 4px solid var(--primary-color);
             position: relative;
@@ -289,7 +285,7 @@
         }
         
         .simple-meanings {
-            font-size: 1.125rem;
+            font-size: 1.1rem;
             font-weight: 500;
             color: var(--text-color);
         }
@@ -323,10 +319,10 @@
         }
 
         .section-title {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--ink-black);
-            margin: 1.5rem 0 1rem 0;
+            margin: 1.25rem 0 1rem 0;
             padding-bottom: 0.75rem;
             border-bottom: 2px solid var(--border-color);
             display: flex;
@@ -363,11 +359,11 @@
         }
         
         .kanji-char {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-family: 'Noto Sans JP', sans-serif;
             color: var(--primary-color);
             background: linear-gradient(135deg, #e8f0fe 0%, #dde7f8 100%);
-            width: 56px; height: 56px;
+            width: 50px; height: 50px;
             display: grid; place-items: center;
             border-radius: var(--border-radius-md);
             flex-shrink: 0;
@@ -387,7 +383,7 @@
         }
         
         .kanji-details { flex-grow: 1; }
-        .kanji-meaning { font-size: 1.1rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--ink-black); }
+        .kanji-meaning { font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--ink-black); }
         .kanji-rtk { font-size: 0.875rem; color: var(--text-secondary); margin: 0; }
         
         .error-message {
@@ -401,25 +397,12 @@
         }
 
         /* --- Immersion Kit Styles (Enhanced) --- */
-        .immersion-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color);
-            background-color: #fafafa;
-        }
-        
-        .immersion-title {
-            color: var(--ink-black); font-weight: 700; font-size: 1.25rem;
-            display: flex; align-items: center; gap: 0.5rem;
-        }
-        
-        .immersion-title::before { content: "📚"; font-size: 1.1rem; }
-        
         .immersion-content-wrapper {
-            flex: 1; display: flex; flex-direction: column; position: relative; min-height: 400px;
+            flex: 1; display: flex; flex-direction: column; position: relative; min-height: 350px;
         }
         
         .immersion-state-overlay {
-            display: flex; justify-content: center; align-items: center; padding: 2rem;
+            display: flex; justify-content: center; align-items: center; padding: 1.5rem;
             text-align: center; flex: 1; flex-direction: column; gap: 1rem;
         }
         
@@ -427,9 +410,14 @@
         .immersion-example-content { display: none; flex-direction: column; height: 100%; }
         
         .image-container {
-            position: relative; width: 100%; height: 280px;
-            overflow: hidden; background: linear-gradient(to right, #f8f9fa, #f0f2f5);
-            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            width: 100%;
+            height: 350px;
+            overflow: hidden;
+            background: linear-gradient(to right, #f8f9fa, #f0f2f5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .example-image {
@@ -444,7 +432,7 @@
         .audio-visualizer-container {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            height: 60px;
+            height: 50px;
             pointer-events: none;
             background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
             opacity: 0;
@@ -455,34 +443,34 @@
         #audio-visualizer { width: 100%; height: 100%; }
 
         .example-text-container {
-            padding: 1.5rem; flex: 1; display: flex; flex-direction: column;
-            justify-content: center; min-height: 180px;
+            padding: 1.25rem; flex: 1; display: flex; flex-direction: column;
+            justify-content: center; min-height: 150px;
             background-color: #fcfcfc;
         }
         
         .example-sentence {
-            font-family: 'Noto Sans JP', sans-serif; font-size: 1.5rem; text-align: center;
+            font-family: 'Noto Sans JP', sans-serif; font-size: 1.25rem; text-align: center;
             line-height: 1.6; margin: 0 0 1rem 0;
             color: var(--ink-black); position: relative; padding: 0 1rem;
         }
         
         .example-sentence::before,
         .example-sentence::after {
-            content: """; font-size: 2rem; color: rgba(0, 0, 0, 0.1); position: absolute;
+            content: """; font-size: 1.75rem; color: rgba(0, 0, 0, 0.1); position: absolute;
         }
         
         .example-sentence::before { top: -0.5rem; left: 0; }
         .example-sentence::after { bottom: -1.5rem; right: 0; transform: rotate(180deg); }
         
         .example-translation {
-            color: var(--text-secondary); font-size: 1rem; text-align: center;
+            color: var(--text-secondary); font-size: 0.95rem; text-align: center;
             margin: 0; font-style: italic;
         }
         
         .ik-btn-overlay {
-            position: absolute; bottom: 1.25rem; right: 1.25rem;
+            position: absolute; bottom: 1rem; right: 1rem;
             background-color: rgba(255, 255, 255, 0.95); color: var(--primary-color);
-            border: 1px solid var(--border-color); width: 48px; height: 48px;
+            border: 1px solid var(--border-color); width: 44px; height: 44px;
             border-radius: 50%; cursor: pointer; display: grid; place-items: center;
             transition: all var(--transition-speed) ease; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             opacity: 0.85; backdrop-filter: blur(4px);
@@ -494,20 +482,20 @@
             color: var(--japan-red);
         }
         
-        .ik-btn-overlay svg { width: 24px; height: 24px; }
+        .ik-btn-overlay svg { width: 22px; height: 22px; }
         
         .regular-nav {
             display: none; justify-content: space-between; align-items: center;
-            padding: 0.75rem 1.5rem; border-top: 1px solid var(--border-color);
+            padding: 0.75rem 1.25rem; border-top: 1px solid var(--border-color);
             background-color: var(--surface-color);
         }
         
         .example-counter { 
-            color: var(--text-secondary); font-weight: 500; font-size: 0.9rem;
+            color: var(--text-secondary); font-weight: 500; font-size: 0.85rem;
             display: flex; align-items: center; gap: 0.5rem;
         }
         
-        .example-counter::before { content: "🔢"; font-size: 0.9rem; }
+        .example-counter::before { content: "🔢"; font-size: 0.85rem; }
         
         .nav-controls { display: flex; gap: 0.5rem; align-items: center; }
         
@@ -515,11 +503,11 @@
             background-color: transparent; color: var(--text-secondary);
             border: 1px solid var(--border-color); border-radius: 10px;
             cursor: pointer; transition: all var(--transition-speed) ease;
-            width: 44px; height: 44px; display: grid; place-items: center;
+            width: 40px; height: 40px; display: grid; place-items: center;
             position: relative; overflow: hidden;
         }
         
-        .ik-btn svg { width: 22px; height: 22px; }
+        .ik-btn svg { width: 20px; height: 20px; }
         
         .ik-btn:hover { 
             background-color: var(--bg-color); color: var(--primary-color);
@@ -537,13 +525,18 @@
         }
         
         @media (max-width: 600px) {
-            .app-container { padding: 1rem; gap: 1rem; }
-            #random-word-btn { bottom: 1rem; right: 1rem; width: 56px; height: 56px; }
-            .word-main { font-size: 2.75rem; }
-            .word-reading { font-size: 1.25rem; }
-            .example-sentence { font-size: 1.25rem; }
-            .image-container { height: 220px; }
-            .example-text-container { padding: 1rem; min-height: 160px; }
+            .app-container { padding: 0.75rem; gap: 1rem; }
+            .word-main { font-size: 2.5rem; }
+            .word-reading { font-size: 1.1rem; }
+            .example-sentence { font-size: 1.1rem; }
+            .image-container { height: 200px; }
+            .example-text-container { padding: 1rem; min-height: 140px; }
+            #random-word-btn {
+                width: 54px;
+                height: 54px;
+                bottom: 1rem;
+                right: 1rem;
+            }
         }
     </style>
 </head>
@@ -552,9 +545,7 @@
     <div class="japanese-pattern pattern-2">習</div>
     
     <div class="app-container">
-        <!-- HEADER REMOVED -->
-        <!-- CONTROLS DIV REMOVED -->
-
+        
         <div class="content-grid" id="content-grid">
             <section id="word-info-section" class="content-section">
                 <div class="card word-info-card">
@@ -580,12 +571,12 @@
                 </div>
             </section>
         </div>
-
-        <!-- NEW FLOATING ACTION BUTTON -->
+        
+        <!-- MODIFIED: Floating Action Button (container div removed) -->
         <button id="random-word-btn" title="Discover New Word">
             <div class="spinner"></div>
             <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M22 15.5c0 1.33-2 2.5-2 2.5s-2-1.17-2-2.5c0-1.1.9-2 2-2s2 .9 2 2zM7.5 2c-1.11 0-2 .89-2 2v1.03c.23-.02.46-.03.7-.03.88 0 1.7.23 2.43.64.59-.26 1.25-.41 1.94-.41 1.18 0 2.25.51 3 1.28.75-.77 1.82-1.28 3-1.28 1.38 0 2.5 1.12 2.5 2.5 0 .61-.22 1.16-.59 1.59.32.22.59.53.59.91 0 .69-.56 1.25-1.25 1.25H10.9c-.06-2.09-1.76-3.75-3.87-3.75-.24 0-.47.02-.7.06V4c0-.55-.45-1-1-1s-1 .45-1 1v.06c-.23.04-.46.06-.7.06-2.11 0-3.81 1.66-3.87 3.75H.25C.11 8.81 0 8.69 0 8.55c0-.38.27-.69.59-.91C.22 7.16 0 6.61 0 6c0-1.38 1.12-2.5 2.5-2.5 1.18 0 2.25.51 3 1.28C6.25 2.51 7.32 2 8.5 2c.35 0 .69.06 1 .16.59-.74 1.54-1.16 2.5-1.16s1.91.42 2.5 1.16c.31-.1.65-.16 1-.16 1.18 0 2.25.51 3 1.28C19.25 2.51 20.32 2 21.5 2c.35 0 .69.06 1 .16.59-.74 1.54-1.16 2.5-1.16s1.91.42 2.5 1.16c.31-.1.65-.16 1-.16.34 0 .67.04 1 .12V4c0-1.11-.89-2-2-2h-1.5zm-1.5 6c0 1.33-2 2.5-2 2.5s-2-1.17-2-2.5c0-1.1.9-2 2-2s2 .9 2 2zM4 15.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-2.5-2-2.5S4 14.17 4 15.5zM15 8c-1.1 0-2 .9-2 2c0 1.33-2 2.5-2 2.5S9 11.33 9 10c0-1.1-.9-2-2-2s-2 .9-2 2c0 1.33-2 2.5-2 2.5S1 11.33 1 10c0-1.1-.9-2-2-2s-2 .9-2 2c0 1.33-2 2.5-2 2.5V19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2v-6.5S20 11.33 20 10c0-1.1-.9-2-2-2s-2 .9-2 2z"/>
+                <path d="M22 15.5c0 1.33-2 2.5-2 2.5s-2-1.17-2-2.5c0-1.1.9-2 2-2s2 .9 2 2zM7.5 2c-1.11 0-2 .89-2 2v1.03c.23-.02.46-.03.7-.03.88 0 1.7.23 2.43.64.59-.26 1.25-.41 1.94-.41 1.18 0 2.25.51 3 1.28.75-.77 1.82-1.28 3-1.28 1.38 0 2.5 1.12 2.5 2.5 0 .61-.22 1.16-.59 1.59.32.22.59.53.59.91 0 .69-.56 1.25-1.25 1.25H10.9c-.06-2.09-1.76-3.75-3.87-3.75-.24 0-.47.02-.7.06V4c0-.55-.45-1-1-1s-1 .45-1 1v.06c-.23.04-.46.06-.7.06-2.11 0-3.81 1.66-3.87 3.75H.25C.11 8.81 0 8.69 0 8.55c0-.38.27-.69.59-.91C.22 7.16 0 6.61 0 6c0-1.38 1.12-2.5 2.5-2.5 1.18 0 2.25.51 3 1.28C6.25 2.51 7.32 2 8.5 2c.35 0 .69.06 1 .16.59-.74 1.54-1.16 2.5-1.16s1.91.42 2.5 1.16c.31-.1.65-.16 1-.16 1.18 0 2.25.51 3 1.28C19.25 2.51 20.32 2 21.5 2c.35 0 .69.06 1 .16.59-.74 1.54-1.16 2.5-1.16s1.91.42 2.5 1.16c.31-.1.65-.16 1-.16.34 0 .67.04 1 .12V4c0-1.11-.89-2-2-2h-1.5zm-1.5 6c0 1.33-2 2.5-2 2.5s-2-1.17-2-2.5c0-1.1.9-2 2-2s2 .9 2 2zM4 15.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-2.5-2-2.5S4 14.17 4 15.5zM15 8c-1.1 0-2 .9-2 2c0 1.33-2 2.5-2 2.5S9 11.33 9 10c0-1.1-.9-2-2-2s-2 .9-2 2c0 1.33-2 2.5-2 2.5S1 11.33 1 10c0-1.1-.9-2-2-2s-2 .9-2 2c0 1.33-2 2.5-2 2.5V19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2v-6.5S20 11.33 20 10c0-1.1-.9-2-2-2s-2 .9-2 2z"></path>
             </svg>
         </button>
     </div>
@@ -755,7 +746,6 @@
 
         _getInitialHTML() {
             return `
-            <div class="immersion-header"><span class="immersion-title">Contextual Examples</span></div>
             <div class="immersion-content-wrapper">
                 <div class="immersion-state-overlay">
                     <p class="immersion-state-message">Loading examples...</p>
@@ -890,7 +880,6 @@
 
         async fetchExamples(word) {
             this.lastSearchWord = word;
-            this.container.querySelector('.immersion-title').textContent = `Examples for "${word}"`;
             this.stopCurrentAudio(); this.toggleLoop(false);
 
             try {
@@ -1097,7 +1086,7 @@
             const contentGrid = document.getElementById('content-grid');
             contentGrid.innerHTML = `<div class="error-message" style="grid-column: 1 / -1;"><strong>Failed to start the app.</strong><br>Could not load essential data. Please refresh the page.</div>`;
             randomWordBtn.disabled = true;
-            randomWordBtn.querySelector('.btn-icon').style.display = 'none'; // Hide icon on error
+            randomWordBtn.querySelector('.btn-icon').style.display = 'none';
         });
     });
     </script>
