@@ -439,25 +439,39 @@
     // **FIX:** Initialize kanjiMap as an empty Map. It will be populated after fetching data.
     let kanjiMap = new Map();
 
-    const PROXY_ENDPOINTS = [
-        'https://corsproxy.io/?',
-        'https://cors.sh/',
-        'https://api.codetabs.com/v1/proxy?quest=',
-        'https://yacdn.org/proxy/'
-    ];
-    
-    let currentProxyIndex = 0;
+    // =================================================================================
+    // API FUNCTIONS (Now using local server)
+    // =================================================================================
 
-    // =================================================================================
-    // JISHO API FUNCTIONS - FIXED
-    // =================================================================================
+    /**
+     * A generic fetch wrapper to query our local server proxy.
+     * @param {string} targetUrl - The actual API endpoint to hit.
+     * @param {object} [params] - A key-value object of query parameters.
+     * @returns {Promise<Response>}
+     */
+    async function serverFetch(targetUrl, params = {}) {
+        const endpoint = targetUrl.includes('jisho.org') ? '/api/jisho' : '/api/immersion-kit';
+        
+        const queryString = new URLSearchParams(params).toString();
+
+        // For the generic immersion-kit proxy, we pass the original URL as a parameter
+        let fetchUrl;
+        if (endpoint === '/api/immersion-kit') {
+            const allParams = new URLSearchParams(params);
+            allParams.set('targetUrl', targetUrl);
+            fetchUrl = `${endpoint}?${allParams.toString()}`;
+        } else {
+            fetchUrl = `${endpoint}?${queryString}`;
+        }
+        
+        return fetch(fetchUrl);
+    }
 
     async function fetchWordDetails(word) {
         try {
             console.log('🔍 Fetching word details from Jisho for:', word);
             
-            const url = `https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(word)}`;
-            const response = await fetch(url);
+            const response = await serverFetch('https://jisho.org/api/v1/search/words', { keyword: word });
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -555,59 +569,7 @@
     }
 
     // =================================================================================
-    // FIXED PROXY FETCH FUNCTION
-    // =================================================================================
-
-    async function proxyFetch(targetUrl, options = {}) {
-        const maxAttempts = PROXY_ENDPOINTS.length * 2;
-        let lastError = null;
-        
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
-            const proxyIndex = attempt % PROXY_ENDPOINTS.length;
-            const proxyUrl = PROXY_ENDPOINTS[proxyIndex];
-            
-            try {
-                console.log(`🔄 Attempt ${attempt + 1}/${maxAttempts} using ${proxyUrl}`);
-                
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
-                
-                const fullUrl = proxyUrl + encodeURIComponent(targetUrl);
-                
-                const response = await fetch(fullUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json, text/plain, */*',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                        'Origin': window.location.origin,
-                        'Referer': window.location.href,
-                        ...options.headers
-                    },
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                console.log(`✅ Success with ${proxyUrl}`);
-                return response;
-                
-            } catch (error) {
-                console.error(`❌ ${proxyUrl} failed:`, error.message);
-                lastError = error;
-                
-                if (attempt < maxAttempts - 1) {
-                    const delay = Math.min(1000 * Math.pow(1.5, Math.floor(attempt / PROXY_ENDPOINTS.length)), 5000);
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                }
-            }
-        }
-        
-        throw new Error(`All proxy attempts failed. Last error: ${lastError?.message}`);
-    }
+    // The old proxyFetch function is no longer needed and has been removed.
 
     // =================================================================================
     // CORE WEB APP LOGIC
@@ -842,7 +804,7 @@
             
             try {
                 console.log('📋 Fetching metadata...');
-                const response = await proxyFetch('https://apiv2.immersionkit.com/index_meta');
+                const response = await serverFetch('https://apiv2.immersionkit.com/index_meta');
                 const data = await response.json();
                 this.deckTitleMap = data.data || {};
                 console.log('✅ Metadata loaded');
@@ -871,10 +833,14 @@
                 
                 await this._ensureMetadata();
                 
-                const url = `https://apiv2.immersionkit.com/search?q=${encodeURIComponent(sanitizedWord)}&exactMatch=false&limit=50&sort=sentence_length:asc`;
                 console.log('🔍 Searching for examples...');
                 
-                const response = await proxyFetch(url);
+                const response = await serverFetch('https://apiv2.immersionkit.com/search', {
+                    q: sanitizedWord,
+                    exactMatch: 'false',
+                    limit: '50',
+                    sort: 'sentence_length:asc'
+                });
                 const data = await response.json();
                 
                 const rawExamples = data.examples || [];
@@ -934,7 +900,7 @@
             this.elements.image.src = '';
             if (!url) return;
             
-            proxyFetch(url)
+            serverFetch(url)
                 .then(response => response.blob())
                 .then(blob => {
                     this.currentImageBlobUrl = URL.createObjectURL(blob);
@@ -971,7 +937,7 @@
                     this.audioContext.resume();
                 }
                 
-                proxyFetch(url)
+                serverFetch(url)
                     .then(response => response.arrayBuffer())
                     .then(arrayBuffer => {
                         if (playId !== this.lastPlayId) return resolve();
