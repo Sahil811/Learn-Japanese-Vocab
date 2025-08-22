@@ -103,8 +103,9 @@
         /* --- MODIFIED: Floating Action Button Styles --- */
         #random-word-btn {
             position: fixed;
-            bottom: 1.5rem;
+            top: 50%; /* CHANGED from bottom */
             right: 1.5rem;
+            transform: translateY(-50%); /* ADDED for vertical centering */
             width: 60px;
             height: 60px;
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-variant) 100%);
@@ -121,12 +122,12 @@
         }
         
         #random-word-btn:hover {
-            transform: translateY(-3px) scale(1.05);
+            transform: translateY(-50%) translateY(-3px) scale(1.05); /* MODIFIED to combine transforms */
             box-shadow: 0 8px 20px rgba(26, 115, 232, 0.4);
         }
         
         #random-word-btn:active {
-            transform: translateY(0) scale(1);
+            transform: translateY(-50%) scale(1); /* MODIFIED to combine transforms */
             box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3);
         }
 
@@ -134,7 +135,7 @@
             cursor: not-allowed;
             background: #b0b0b0;
             box-shadow: none;
-            transform: none;
+            transform: translateY(-50%); /* MODIFIED to maintain position */
         }
         
         /* --- ADDED: Rule to correctly size the SVG icon --- */
@@ -275,7 +276,7 @@
         }
         
         .word-meanings::before {
-            content: """;
+            content: '"';
             position: absolute;
             top: 0.5rem;
             left: 1rem;
@@ -456,7 +457,7 @@
         
         .example-sentence::before,
         .example-sentence::after {
-            content: """; font-size: 1.75rem; color: rgba(0, 0, 0, 0.1); position: absolute;
+            content: '"'; font-size: 1.75rem; color: rgba(0, 0, 0, 0.1); position: absolute;
         }
         
         .example-sentence::before { top: -0.5rem; left: 0; }
