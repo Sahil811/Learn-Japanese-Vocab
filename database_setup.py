@@ -26,6 +26,12 @@ def create_database():
             rtk TEXT
         )
     ''')
+    
+    # Create indexes for better performance
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_words_word ON words(word)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_kanji_kanji ON kanji(kanji)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_kanji_meaning ON kanji(meaning)')
+    print("Database indexes created for optimal performance.")
 
     # Load and insert word data
     try:

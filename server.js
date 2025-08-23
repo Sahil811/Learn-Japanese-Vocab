@@ -7,20 +7,40 @@ const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const PORT = process.env.PORT || 7000;
 
+// Performance middleware
+app.use((req, res, next) => {
+    // Add caching headers for static resources
+    if (req.url.includes('.css') || req.url.includes('.js') || req.url.includes('.json')) {
+        res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours
+    }
+    // Add compression headers
+    res.setHeader('Vary', 'Accept-Encoding');
+    next();
+});
+
 // Serve static files under /mokuro path, including index.html
 app.use('/mokuro/visual_novel', express.static(path.join(__dirname)));
 
-// Database connection
-const db = new sqlite3.Database('japanese_words.db', (err) => {
+// Database connection with performance optimizations
+const db = new sqlite3.Database('japanese_words.db', sqlite3.OPEN_READWRITE, (err) => {
     if (err) {
         console.error('Error opening database:', err);
     } else {
         console.log('Connected to SQLite database');
+        // Enable performance optimizations
+        db.run('PRAGMA journal_mode = WAL');
+        db.run('PRAGMA synchronous = NORMAL');
+        db.run('PRAGMA cache_size = 10000');
+        db.run('PRAGMA temp_store = MEMORY');
     }
 });
 
-// API endpoint to get all words
+// API endpoint to get all words (optimized with caching)
 app.get('/api/words', (req, res) => {
+    // Set cache headers
+    res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour
+    res.setHeader('ETag', 'words-v1');
+    
     db.all('SELECT word FROM words ORDER BY word', (err, rows) => {
         if (err) {
             console.error('Error fetching words:', err);
@@ -32,8 +52,12 @@ app.get('/api/words', (req, res) => {
     });
 });
 
-// API endpoint to get all kanji data
+// API endpoint to get all kanji data (optimized with caching)
 app.get('/api/kanji', (req, res) => {
+    // Set cache headers
+    res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour
+    res.setHeader('ETag', 'kanji-v1');
+    
     db.all('SELECT kanji, meaning, rtk FROM kanji ORDER BY kanji', (err, rows) => {
         if (err) {
             console.error('Error fetching kanji:', err);

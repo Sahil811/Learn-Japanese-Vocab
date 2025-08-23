@@ -174,10 +174,13 @@
             opacity: 0;
             transform: translateY(10px);
             transition: opacity 0.4s ease, transform 0.4s ease;
+            /* Performance optimization */
+            will-change: opacity, transform;
+            transform: translateZ(0) translateY(10px); /* GPU acceleration */
         }
         .content-section.active {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateZ(0) translateY(0); /* GPU acceleration */
         }
 
         .card {
@@ -190,11 +193,15 @@
             display: flex;
             flex-direction: column;
             transition: box-shadow var(--transition-speed) ease, transform var(--transition-speed) ease;
+            /* Performance optimization: Enable GPU acceleration */
+            will-change: transform, box-shadow;
+            transform: translateZ(0); /* Force hardware acceleration */
+            backface-visibility: hidden; /* Prevent flickering */
         }
         
         .card:hover {
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-            transform: translateY(-5px);
+            transform: translateZ(0) translateY(-5px); /* Use translateZ(0) for GPU */
         }
 
         .word-info-card { padding: 1.5rem; }
@@ -351,12 +358,15 @@
             gap: 1rem;
             transition: all var(--transition-speed) ease;
             border-left: 3px solid transparent;
+            /* Performance optimization */
+            will-change: transform, border-left-color;
+            transform: translateZ(0); /* Force GPU acceleration */
         }
         
         .kanji-card:hover {
             background: linear-gradient(to right, #f0f2f5, #e8ebf0);
             border-left-color: var(--japan-red);
-            transform: translateX(5px);
+            transform: translateZ(0) translateX(5px); /* GPU acceleration */
         }
         
         .kanji-char {
@@ -371,6 +381,9 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
             position: relative;
             overflow: hidden;
+            /* Performance optimization */
+            will-change: transform;
+            transform: translateZ(0); /* GPU acceleration */
         }
         
         .kanji-char::after {
@@ -398,7 +411,7 @@
         
         .kanji-char-link:hover {
             color: var(--japan-red);
-            transform: scale(1.05);
+            transform: translateZ(0) scale(1.05); /* GPU acceleration */
         }
         
         .kanji-char-link:focus {
@@ -559,13 +572,17 @@
             cursor: pointer; transition: all var(--transition-speed) ease;
             width: 40px; height: 40px; display: grid; place-items: center;
             position: relative; overflow: hidden;
+            /* Performance optimization */
+            will-change: transform, background-color;
+            transform: translateZ(0); /* GPU acceleration */
         }
         
         .ik-btn svg { width: 20px; height: 20px; }
         
         .ik-btn:hover { 
             background-color: var(--bg-color); color: var(--primary-color);
-            transform: translateY(-2px); box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            transform: translateZ(0) translateY(-2px); /* GPU acceleration */
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
         }
         
         .ik-btn.is-active { 
@@ -637,10 +654,64 @@
 
     <script>
     'use strict';
+    // --- Performance Enhancements ---
+    const CACHE_VERSION = '1.0';
+    const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+    
     // --- Data Stores ---
     let KANJI_DATA = [];
     let WORD_LIST = [];
     let kanjiMap = new Map();
+    let wordDetailsCache = new Map();
+    let imageCache = new Map();
+    
+    // --- Performance Monitoring ---
+    const performance = {
+        startTime: Date.now(),
+        loadTimes: {},
+        metrics: {
+            totalWords: 0,
+            totalKanji: 0,
+            cacheHits: 0,
+            cacheMisses: 0,
+            apiCalls: 0
+        },
+        mark: function(name) {
+            this.loadTimes[name] = Date.now() - this.startTime;
+            console.log(`⚡ ${name}: ${this.loadTimes[name]}ms`);
+        },
+        recordCacheHit: function() {
+            this.metrics.cacheHits++;
+        },
+        recordCacheMiss: function() {
+            this.metrics.cacheMisses++;
+        },
+        recordApiCall: function() {
+            this.metrics.apiCalls++;
+        },
+        getReport: function() {
+            const total = Date.now() - this.startTime;
+            const cacheHitRate = this.metrics.cacheHits / (this.metrics.cacheHits + this.metrics.cacheMisses) * 100;
+            return {
+                totalTime: total,
+                loadTimes: this.loadTimes,
+                cacheHitRate: cacheHitRate.toFixed(1) + '%',
+                metrics: this.metrics
+            };
+        },
+        logReport: function() {
+            const report = this.getReport();
+            console.group('📊 Performance Report');
+            console.log('Total Runtime:', report.totalTime + 'ms');
+            console.log('Cache Hit Rate:', report.cacheHitRate);
+            console.log('API Calls Made:', report.metrics.apiCalls);
+            console.log('Load Times:', report.loadTimes);
+            console.groupEnd();
+        }
+    };
+    
+    // Log performance report every 30 seconds
+    setInterval(() => performance.logReport(), 30000);
 
     // --- RTK Text Processing Function ---
     function processRTKText(rtkText) {
@@ -689,6 +760,81 @@
         RETRY: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`
     };
 
+    // --- Performance Utilities ---
+    class PerformanceUtils {
+        static debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        static throttle(func, limit) {
+            let inThrottle;
+            return function(...args) {
+                if (!inThrottle) {
+                    func.apply(this, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            };
+        }
+        
+        static requestIdleCallback(callback) {
+            if (window.requestIdleCallback) {
+                return window.requestIdleCallback(callback);
+            } else {
+                return setTimeout(callback, 1);
+            }
+        }
+    }
+
+    // --- Caching Utilities ---
+    class CacheManager {
+        static setCache(key, data, expiry = CACHE_EXPIRY) {
+            const item = {
+                data,
+                timestamp: Date.now(),
+                expiry
+            };
+            try {
+                localStorage.setItem(`jdojo_${CACHE_VERSION}_${key}`, JSON.stringify(item));
+            } catch (e) {
+                console.warn('Cache storage failed:', e);
+            }
+        }
+        
+        static getCache(key) {
+            try {
+                const item = localStorage.getItem(`jdojo_${CACHE_VERSION}_${key}`);
+                if (!item) return null;
+                
+                const parsed = JSON.parse(item);
+                if (Date.now() - parsed.timestamp > parsed.expiry) {
+                    localStorage.removeItem(`jdojo_${CACHE_VERSION}_${key}`);
+                    return null;
+                }
+                return parsed.data;
+            } catch (e) {
+                return null;
+            }
+        }
+        
+        static clearOldCache() {
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith('jdojo_') && !key.startsWith(`jdojo_${CACHE_VERSION}_`)) {
+                    localStorage.removeItem(key);
+                }
+            });
+        }
+    }
+
     // --- API & Data Handling ---
     async function serverFetch(targetUrl, params = {}) {
         const endpoint = targetUrl.includes('jisho.org') ? '/api/jisho' : '/api/immersion-kit';
@@ -701,14 +847,27 @@
     }
 
     async function fetchWordDetails(word) {
+        // Check cache first
+        const cacheKey = `word_${word}`;
+        const cached = wordDetailsCache.get(word) || CacheManager.getCache(cacheKey);
+        if (cached) {
+            wordDetailsCache.set(word, cached);
+            performance.recordCacheHit();
+            return cached;
+        }
+        
+        performance.recordCacheMiss();
+        performance.recordApiCall();
+        
         try {
+            performance.mark(`Word fetch start: ${word}`);
             const response = await serverFetch('https://jisho.org/api/v1/search/words', { keyword: word });
             if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             const data = await response.json();
             if (!data.data || data.data.length === 0) return null;
             
             const entry = data.data.find(d => d.japanese[0].word === word) || data.data[0];
-            return {
+            const result = {
                 word: entry.japanese[0]?.word || word,
                 reading: entry.japanese[0]?.reading || '',
                 isCommon: entry.is_common,
@@ -716,6 +875,13 @@
                 firstSense: entry.senses?.[0] || null,
                 tags: entry.tags || []
             };
+            
+            // Cache the result
+            wordDetailsCache.set(word, result);
+            CacheManager.setCache(cacheKey, result);
+            performance.mark(`Word fetch end: ${word}`);
+            
+            return result;
         } catch (error) {
             console.error('❌ Jisho API Error:', error);
             throw error;
@@ -756,7 +922,7 @@
     }
 
     // --- Main Application Logic ---
-    async function showRandomWord() {
+    const showRandomWordThrottled = PerformanceUtils.throttle(async function() {
         if (WORD_LIST.length === 0) return;
 
         // Animate out the old content for a smooth transition
@@ -781,12 +947,15 @@
 
         const uniqueKanji = [...new Set(word.match(/[\u4e00-\u9faf]/g) || [])];
         if (uniqueKanji.length > 0) {
-            uniqueKanji.forEach(kanji => {
-                const data = kanjiMap.get(kanji);
-                if (data) {
-                    const processedRTK = processRTKText(data.rtk);
-                    kanjiBreakdownEl.innerHTML += `<div class="kanji-card"><div class="kanji-char"><a href="https://kanji.koohii.com/study/kanji/${data.kanji}" target="_blank" class="kanji-char-link">${data.kanji}</a></div><div class="kanji-details"><h3 class="kanji-meaning">${data.meaning}</h3><p class="kanji-rtk">${processedRTK}</p></div></div>`;
-                }
+            // Use requestIdleCallback for non-critical kanji rendering
+            PerformanceUtils.requestIdleCallback(() => {
+                uniqueKanji.forEach(kanji => {
+                    const data = kanjiMap.get(kanji);
+                    if (data) {
+                        const processedRTK = processRTKText(data.rtk);
+                        kanjiBreakdownEl.innerHTML += `<div class="kanji-card"><div class="kanji-char"><a href="https://kanji.koohii.com/study/kanji/${data.kanji}" target="_blank" class="kanji-char-link">${data.kanji}</a></div><div class="kanji-details"><h3 class="kanji-meaning">${data.meaning}</h3><p class="kanji-rtk">${processedRTK}</p></div></div>`;
+                    }
+                });
             });
         } else {
             kanjiBreakdownEl.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">This word contains no kanji.</p>`;
@@ -802,6 +971,10 @@
 
         randomWordBtn.classList.remove('loading');
         randomWordBtn.disabled = false;
+    }, 1000); // Throttle to max 1 request per second
+    
+    async function showRandomWord() {
+        return showRandomWordThrottled();
     }
 
     // --- Immersion Kit Handler Class ---
@@ -1006,8 +1179,24 @@
                 return;
             }
 
+            // Check image cache first
+            if (imageCache.has(url)) {
+                const cachedBlob = imageCache.get(url);
+                this.currentImageBlobUrl = URL.createObjectURL(cachedBlob);
+                this.elements.image.src = this.currentImageBlobUrl;
+                this.elements.skeleton.style.display = 'none';
+                this.elements.image.style.display = 'block';
+                this.elements.image.classList.remove('loading');
+                return;
+            }
+
             this.elements.image.classList.add('loading');
             serverFetch(url).then(res => res.blob()).then(blob => {
+                // Cache the blob for future use
+                if (imageCache.size < 50) { // Limit cache size
+                    imageCache.set(url, blob);
+                }
+                
                 this.currentImageBlobUrl = URL.createObjectURL(blob);
                 this.elements.image.src = this.currentImageBlobUrl;
                 this.elements.image.onload = () => {
@@ -1156,23 +1345,70 @@
     });
 
     document.addEventListener('DOMContentLoaded', function() {
-        Promise.all([
-            fetch("/api/words").then(res => res.ok ? res.json() : Promise.reject(res)),
-            fetch("/api/kanji").then(res => res.ok ? res.json() : Promise.reject(res))
-        ])
-        .then(([wordData, kanjiData]) => {
-            WORD_LIST = wordData;
-            KANJI_DATA = kanjiData;
+        performance.mark('DOM loaded');
+        CacheManager.clearOldCache();
+        
+        // Register service worker for offline caching
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('🔧 Service Worker registered:', registration);
+                    performance.mark('Service Worker registered');
+                })
+                .catch(error => {
+                    console.warn('Service Worker registration failed:', error);
+                });
+        }
+        
+        // Try to load from cache first
+        const cachedWords = CacheManager.getCache('words');
+        const cachedKanji = CacheManager.getCache('kanji');
+        
+        if (cachedWords && cachedKanji) {
+            performance.mark('Loading from cache');
+            performance.recordCacheHit();
+            performance.recordCacheHit(); // Two cache hits for words and kanji
+            WORD_LIST = cachedWords;
+            KANJI_DATA = cachedKanji;
+            performance.metrics.totalWords = WORD_LIST.length;
+            performance.metrics.totalKanji = KANJI_DATA.length;
             kanjiMap = new Map(KANJI_DATA.map(item => [item.kanji, item]));
+            performance.mark('Cache data processed');
             showRandomWord();
-        })
-        .catch(error => {
-            console.error("❌ Error loading initial data:", error);
-            const contentGrid = document.getElementById('content-grid');
-            contentGrid.innerHTML = `<div class="error-message" style="grid-column: 1 / -1;"><strong>Failed to start the app.</strong><br>Could not load essential data. Please refresh the page.</div>`;
-            randomWordBtn.disabled = true;
-            randomWordBtn.querySelector('.btn-icon').style.display = 'none';
-        });
+            performance.mark('First word displayed');
+        } else {
+            // Load from API with loading indicator
+            performance.mark('Loading from API');
+            performance.recordCacheMiss();
+            performance.recordCacheMiss(); // Two cache misses for words and kanji
+            performance.recordApiCall();
+            performance.recordApiCall(); // Two API calls for words and kanji
+            Promise.all([
+                fetch("/api/words").then(res => res.ok ? res.json() : Promise.reject(res)),
+                fetch("/api/kanji").then(res => res.ok ? res.json() : Promise.reject(res))
+            ])
+            .then(([wordData, kanjiData]) => {
+                performance.mark('API data received');
+                WORD_LIST = wordData;
+                KANJI_DATA = kanjiData;
+                kanjiMap = new Map(KANJI_DATA.map(item => [item.kanji, item]));
+                
+                // Cache the data
+                CacheManager.setCache('words', wordData);
+                CacheManager.setCache('kanji', kanjiData);
+                
+                performance.mark('Data cached and processed');
+                showRandomWord();
+                performance.mark('First word displayed');
+            })
+            .catch(error => {
+                console.error("❌ Error loading initial data:", error);
+                const contentGrid = document.getElementById('content-grid');
+                contentGrid.innerHTML = `<div class="error-message" style="grid-column: 1 / -1;"><strong>Failed to start the app.</strong><br>Could not load essential data. Please refresh the page.</div>`;
+                randomWordBtn.disabled = true;
+                randomWordBtn.querySelector('.btn-icon').style.display = 'none';
+            });
+        }
     });
     </script>
 </body>
