@@ -1563,9 +1563,9 @@
         if (wordData.isCommon) tags.push('<span class="tag common">Common</span>');
         wordData.jlpt.forEach(level => tags.push(`<span class="tag jlpt">${level.toUpperCase()}</span>`));
         wordData.tags.forEach(tag => tags.push(`<span class="tag">${tag}</span>`));
-        if (tags.length > 0) {
-            html += `<div class="word-tags">${tags.join('')}</div>`;
-        }
+        // if (tags.length > 0) {
+        //     html += `<div class="word-tags">${tags.join('')}</div>`;
+        // }
 
         wordDetailsEl.innerHTML = html;
     }
