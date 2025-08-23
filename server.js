@@ -7,6 +7,9 @@ const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const PORT = process.env.PORT || 7000;
 
+// Middleware for parsing JSON bodies
+app.use(express.json());
+
 // Performance middleware
 app.use((req, res, next) => {
     // Add caching headers for static resources
@@ -147,6 +150,58 @@ app.get('/api/kanji/:kanji', (req, res) => {
         } else {
             res.status(404).json({ error: 'Kanji not found' });
         }
+    });
+});
+
+// API endpoint to update kanji RTK
+app.put('/api/kanji/:kanji/rtk', (req, res) => {
+    const kanjiChar = req.params.kanji;
+    const { rtk } = req.body;
+    
+    // Validate input
+    if (rtk === undefined || rtk === null) {
+        return res.status(400).json({ error: 'RTK field is required' });
+    }
+    
+    // Convert to string and trim whitespace
+    const rtkValue = String(rtk).trim();
+    
+    // First check if kanji exists
+    db.get('SELECT kanji FROM kanji WHERE kanji = ?', [kanjiChar], (err, row) => {
+        if (err) {
+            console.error('Error checking kanji existence:', err);
+            res.status(500).json({ error: 'Failed to check kanji existence' });
+            return;
+        }
+        
+        if (!row) {
+            res.status(404).json({ error: 'Kanji not found' });
+            return;
+        }
+        
+        // Update the RTK value
+        db.run('UPDATE kanji SET rtk = ? WHERE kanji = ?', [rtkValue, kanjiChar], function(err) {
+            if (err) {
+                console.error('Error updating kanji RTK:', err);
+                res.status(500).json({ error: 'Failed to update kanji RTK' });
+            } else {
+                console.log(`✅ Updated RTK for kanji '${kanjiChar}': "${rtkValue}"`);
+                
+                // Return the updated kanji data
+                db.get('SELECT kanji, meaning, rtk FROM kanji WHERE kanji = ?', [kanjiChar], (err, updatedRow) => {
+                    if (err) {
+                        console.error('Error fetching updated kanji:', err);
+                        res.status(500).json({ error: 'Update successful but failed to fetch updated data' });
+                    } else {
+                        res.json({
+                            success: true,
+                            message: 'RTK updated successfully',
+                            data: updatedRow
+                        });
+                    }
+                });
+            }
+        });
     });
 });
 
