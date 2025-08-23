@@ -1663,7 +1663,9 @@
     // --- Immersion Kit Handler Class ---
     class ImmersionKitHandler {
         constructor() {
-            this.examples = []; this.currentIndex = 0; this.isPlayingAll = false; this.isLoopingAudio = false;
+            this.examples = []; this.currentIndex = 0; this.isPlayingAll = false;
+            // Restore loop state from localStorage or default to false
+            this.isLoopingAudio = localStorage.getItem('jdojo_loop_state') === 'true';
             this.lastSearchWord = null; this.container = null; this.elements = {};
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             this.currentAudioSource = null; this.analyserNode = null; this.visualizerAnimationId = null;
@@ -1731,6 +1733,11 @@
                 visualizerCanvas: sel('#audio-visualizer')
             };
             this.visualizerCtx = this.elements.visualizerCanvas.getContext('2d');
+            
+            // Restore the loop button visual state after elements are cached
+            if (this.elements.loopBtn) {
+                this.elements.loopBtn.classList.toggle('is-active', this.isLoopingAudio);
+            }
         }
 
         _addEventListeners() {
@@ -1805,10 +1812,16 @@
         navigate(direction) {
             if (this.examples.length < 2) return;
             this.stopCurrentAudio();
-            this.toggleLoop(false);
+            // Don't reset loop state when navigating
             this.currentIndex = (this.currentIndex + direction + this.examples.length) % this.examples.length;
             this._updateContent();
-            setTimeout(() => this.playAudio(this.examples[this.currentIndex]?.full_sound_url), 100);
+            setTimeout(() => {
+                this.playAudio(this.examples[this.currentIndex]?.full_sound_url);
+                // If loop is enabled, start looping on the new example
+                if (this.isLoopingAudio) {
+                    this.audioLoop();
+                }
+            }, 100);
         }
 
         async _ensureMetadata() {
@@ -1821,7 +1834,8 @@
 
         async fetchExamples(word) {
             this.lastSearchWord = word;
-            this.stopCurrentAudio(); this.toggleLoop(false);
+            this.stopCurrentAudio();
+            // Don't reset loop state when fetching new examples
 
             try {
                 this._setUIState('loading', 'Finding contextual examples...');
@@ -1856,7 +1870,14 @@
                     this.currentIndex = 0;
                     this._setUIState('content');
                     this._updateContent();
-                    setTimeout(() => this.playAudio(this.examples[0]?.full_sound_url), 150);
+                    // Start audio playback, and if loop is enabled, it will automatically loop
+                    setTimeout(() => {
+                        this.playAudio(this.examples[0]?.full_sound_url);
+                        // If loop state is persistent and enabled, start looping
+                        if (this.isLoopingAudio) {
+                            this.audioLoop();
+                        }
+                    }, 150);
                 } else {
                     this._setUIState('empty', 'No examples found for this word.');
                 }
@@ -1925,7 +1946,16 @@
             });
         }
         
-        playCurrentAudio() { this.toggleLoop(false); if (this.examples.length > 0) this.playAudio(this.examples[this.currentIndex].full_sound_url); }
+        playCurrentAudio() { 
+            // Don't reset loop state when playing current audio manually
+            if (this.examples.length > 0) {
+                this.playAudio(this.examples[this.currentIndex].full_sound_url);
+                // If loop is enabled, start looping after manual play
+                if (this.isLoopingAudio) {
+                    this.audioLoop();
+                }
+            }
+        }
         
         stopCurrentAudio() {
             if (this.currentAudioSource) {
@@ -2161,6 +2191,8 @@
 
         toggleLoop(forceState) {
             this.isLoopingAudio = forceState !== undefined ? forceState : !this.isLoopingAudio;
+            // Save loop state to localStorage for persistence
+            localStorage.setItem('jdojo_loop_state', this.isLoopingAudio.toString());
             if (this.isLoopingAudio) {
                 if (this.isPlayingAll) this.handlePlayAll(false);
                 this.audioLoop();
