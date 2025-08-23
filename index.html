@@ -1073,8 +1073,8 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         Promise.all([
-            fetch("word_list.json").then(res => res.ok ? res.json() : Promise.reject(res)),
-            fetch("kanji_meanings.json").then(res => res.ok ? res.json() : Promise.reject(res))
+            fetch("/api/words").then(res => res.ok ? res.json() : Promise.reject(res)),
+            fetch("/api/kanji").then(res => res.ok ? res.json() : Promise.reject(res))
         ])
         .then(([wordData, kanjiData]) => {
             WORD_LIST = wordData;
