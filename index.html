@@ -349,6 +349,19 @@
         
         #kanji-breakdown { display: flex; flex-direction: column; gap: 0.75rem; }
         
+        /* Virtual scrolling styles */
+        .virtual-scroll-container {
+            overflow-y: auto;
+            max-height: 400px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            background: var(--surface-color);
+        }
+        
+        .virtual-items {
+            will-change: transform;
+        }
+        
         .kanji-card {
             background: linear-gradient(to right, #f8f9fa, #f0f2f5);
             padding: 1rem;
@@ -760,6 +773,274 @@
         RETRY: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`
     };
 
+    // --- Virtual Scrolling System ---
+    class VirtualScrollRenderer {
+        constructor(container, itemHeight = 80) {
+            this.container = container;
+            this.itemHeight = itemHeight;
+            this.visibleItems = 10; // Number of items to render
+            this.buffer = 5; // Extra items to render for smooth scrolling
+            this.items = [];
+            this.scrollTop = 0;
+            this.renderedItems = new Map();
+            this.isVirtualMode = false;
+        }
+        
+        shouldUseVirtualScrolling(itemCount) {
+            return itemCount > 50; // Use virtual scrolling for large lists
+        }
+        
+        setItems(items) {
+            this.items = items;
+            this.isVirtualMode = this.shouldUseVirtualScrolling(items.length);
+            
+            if (this.isVirtualMode) {
+                this.setupVirtualScrolling();
+                performance.mark(`Virtual scrolling enabled for ${items.length} items`);
+            } else {
+                this.renderAllItems();
+            }
+        }
+        
+        setupVirtualScrolling() {
+            const totalHeight = this.items.length * this.itemHeight;
+            
+            // Create virtual container
+            this.container.innerHTML = `
+                <div class="virtual-scroll-container" style="height: ${totalHeight}px; position: relative;">
+                    <div class="virtual-items" style="position: absolute; top: 0; width: 100%;"></div>
+                </div>
+            `;
+            
+            this.virtualContainer = this.container.querySelector('.virtual-scroll-container');
+            this.itemsContainer = this.container.querySelector('.virtual-items');
+            
+            // Add scroll listener
+            this.virtualContainer.addEventListener('scroll', 
+                PerformanceUtils.throttle(() => this.handleScroll(), 16) // 60fps
+            );
+            
+            this.renderVisibleItems();
+        }
+        
+        handleScroll() {
+            this.scrollTop = this.virtualContainer.scrollTop;
+            this.renderVisibleItems();
+        }
+        
+        renderVisibleItems() {
+            const startIndex = Math.max(0, Math.floor(this.scrollTop / this.itemHeight) - this.buffer);
+            const endIndex = Math.min(this.items.length, startIndex + this.visibleItems + this.buffer * 2);
+            
+            // Clear container
+            this.itemsContainer.innerHTML = '';
+            
+            // Render visible items
+            for (let i = startIndex; i < endIndex; i++) {
+                const item = this.items[i];
+                const element = this.createKanjiElement(item, i * this.itemHeight);
+                this.itemsContainer.appendChild(element);
+            }
+            
+            performance.mark(`Rendered ${endIndex - startIndex} virtual items`);
+        }
+        
+        createKanjiElement(kanjiData, offsetTop) {
+            const div = document.createElement('div');
+            div.className = 'kanji-card';
+            div.style.position = 'absolute';
+            div.style.top = offsetTop + 'px';
+            div.style.width = '100%';
+            div.style.height = this.itemHeight + 'px';
+            
+            const processedRTK = processRTKText(kanjiData.rtk);
+            div.innerHTML = `
+                <div class="kanji-char">
+                    <a href="https://kanji.koohii.com/study/kanji/${kanjiData.kanji}" target="_blank" class="kanji-char-link">
+                        ${kanjiData.kanji}
+                    </a>
+                </div>
+                <div class="kanji-details">
+                    <h3 class="kanji-meaning">${kanjiData.meaning}</h3>
+                    <p class="kanji-rtk">${processedRTK}</p>
+                </div>
+            `;
+            
+            return div;
+        }
+        
+        renderAllItems() {
+            // Standard rendering for smaller lists
+            let html = '';
+            this.items.forEach(kanjiData => {
+                const processedRTK = processRTKText(kanjiData.rtk);
+                html += `
+                    <div class="kanji-card">
+                        <div class="kanji-char">
+                            <a href="https://kanji.koohii.com/study/kanji/${kanjiData.kanji}" target="_blank" class="kanji-char-link">
+                                ${kanjiData.kanji}
+                            </a>
+                        </div>
+                        <div class="kanji-details">
+                            <h3 class="kanji-meaning">${kanjiData.meaning}</h3>
+                            <p class="kanji-rtk">${processedRTK}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            this.container.innerHTML = html;
+        }
+    }
+
+    // --- Image Optimization System ---
+    class ImageOptimizer {
+        constructor() {
+            this.preloadQueue = [];
+            this.preloadedImages = new Map();
+            this.compressionCanvas = document.createElement('canvas');
+            this.compressionCtx = this.compressionCanvas.getContext('2d');
+            this.maxCacheSize = 20; // Max preloaded images
+            this.supportsWebP = this.checkWebPSupport();
+        }
+        
+        checkWebPSupport() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1;
+            canvas.height = 1;
+            return canvas.toDataURL('image/webp').indexOf('webp') > 0;
+        }
+        
+        async preloadImage(url) {
+            if (this.preloadedImages.has(url)) {
+                return this.preloadedImages.get(url);
+            }
+            
+            try {
+                const response = await serverFetch(url);
+                const blob = await response.blob();
+                
+                // Compress if image is too large
+                const compressedBlob = await this.compressImage(blob);
+                
+                // Cache the compressed image
+                if (this.preloadedImages.size >= this.maxCacheSize) {
+                    // Remove oldest entry
+                    const firstKey = this.preloadedImages.keys().next().value;
+                    this.preloadedImages.delete(firstKey);
+                }
+                
+                this.preloadedImages.set(url, compressedBlob);
+                performance.mark(`Image preloaded: ${url.split('/').pop()}`);
+                
+                return compressedBlob;
+            } catch (error) {
+                console.warn('Image preload failed:', error);
+                return null;
+            }
+        }
+        
+        async compressImage(blob, maxWidth = 800, quality = 0.8) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    // Skip compression if image is already small
+                    if (img.width <= maxWidth) {
+                        resolve(blob);
+                        return;
+                    }
+                    
+                    // Calculate new dimensions
+                    const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+                    const newWidth = Math.floor(img.width * ratio);
+                    const newHeight = Math.floor(img.height * ratio);
+                    
+                    // Resize using canvas
+                    this.compressionCanvas.width = newWidth;
+                    this.compressionCanvas.height = newHeight;
+                    
+                    this.compressionCtx.imageSmoothingEnabled = true;
+                    this.compressionCtx.imageSmoothingQuality = 'high';
+                    this.compressionCtx.drawImage(img, 0, 0, newWidth, newHeight);
+                    
+                    // Use WebP if supported, otherwise JPEG
+                    const format = this.supportsWebP ? 'image/webp' : 'image/jpeg';
+                    const webpQuality = this.supportsWebP ? quality * 0.9 : quality; // WebP is more efficient
+                    
+                    this.compressionCanvas.toBlob((compressedBlob) => {
+                        if (compressedBlob && compressedBlob.size < blob.size) {
+                            performance.mark(`Image compressed: ${((1 - compressedBlob.size / blob.size) * 100).toFixed(1)}% reduction`);
+                            resolve(compressedBlob);
+                        } else {
+                            // Use original if compression didn't help
+                            resolve(blob);
+                        }
+                    }, format, webpQuality);
+                };
+                img.src = URL.createObjectURL(blob);
+            });
+        }
+        
+        preloadImagesInBackground(urls) {
+            // Preload images during idle time
+            urls.forEach((url, index) => {
+                setTimeout(() => {
+                    PerformanceUtils.requestIdleCallback(() => {
+                        this.preloadImage(url);
+                    });
+                }, index * 100); // Stagger requests
+            });
+        }
+    }
+    
+    const imageOptimizer = new ImageOptimizer();
+
+    // --- Lazy Loading System ---
+    class LazyLoader {
+        constructor() {
+            this.pageSize = 1000; // Load 1000 items at a time
+            this.loadedPages = new Set();
+            this.isLoading = false;
+        }
+        
+        async loadDataChunk(type, page = 0) {
+            if (this.loadedPages.has(`${type}_${page}`) || this.isLoading) {
+                return null;
+            }
+            
+            this.isLoading = true;
+            const offset = page * this.pageSize;
+            
+            try {
+                const endpoint = type === 'words' ? '/api/words' : '/api/kanji';
+                const url = `${endpoint}?limit=${this.pageSize}&offset=${offset}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                
+                this.loadedPages.add(`${type}_${page}`);
+                performance.mark(`Lazy loaded ${type} page ${page}`);
+                
+                return data;
+            } catch (error) {
+                console.error(`Failed to lazy load ${type} page ${page}:`, error);
+                return null;
+            } finally {
+                this.isLoading = false;
+            }
+        }
+        
+        async preloadNextChunk(type, currentPage) {
+            // Preload next page in background
+            setTimeout(() => {
+                this.loadDataChunk(type, currentPage + 1);
+            }, 100);
+        }
+    }
+    
+    const lazyLoader = new LazyLoader();
+
     // --- Performance Utilities ---
     class PerformanceUtils {
         static debounce(func, wait) {
@@ -949,13 +1230,15 @@
         if (uniqueKanji.length > 0) {
             // Use requestIdleCallback for non-critical kanji rendering
             PerformanceUtils.requestIdleCallback(() => {
-                uniqueKanji.forEach(kanji => {
-                    const data = kanjiMap.get(kanji);
-                    if (data) {
-                        const processedRTK = processRTKText(data.rtk);
-                        kanjiBreakdownEl.innerHTML += `<div class="kanji-card"><div class="kanji-char"><a href="https://kanji.koohii.com/study/kanji/${data.kanji}" target="_blank" class="kanji-char-link">${data.kanji}</a></div><div class="kanji-details"><h3 class="kanji-meaning">${data.meaning}</h3><p class="kanji-rtk">${processedRTK}</p></div></div>`;
-                    }
-                });
+                const kanjiDataList = uniqueKanji.map(kanji => kanjiMap.get(kanji)).filter(Boolean);
+                
+                if (kanjiDataList.length > 0) {
+                    // Use virtual scrolling for large lists
+                    const virtualRenderer = new VirtualScrollRenderer(kanjiBreakdownEl);
+                    virtualRenderer.setItems(kanjiDataList);
+                } else {
+                    kanjiBreakdownEl.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">Kanji data not available.</p>`;
+                }
             });
         } else {
             kanjiBreakdownEl.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">This word contains no kanji.</p>`;
@@ -1158,6 +1441,18 @@
                             full_sound_url: ex.sound ? `${linodeBaseUrl}${mediaType}/${prettyTitle}/media/${ex.sound}` : ''
                         };
                     });
+                    
+                    // Preload images in background for faster navigation
+                    const imageUrls = this.examples
+                        .filter(ex => ex.full_image_url)
+                        .map(ex => ex.full_image_url)
+                        .slice(0, 5); // Preload first 5 images
+                    
+                    if (imageUrls.length > 0) {
+                        imageOptimizer.preloadImagesInBackground(imageUrls);
+                        performance.mark(`Started preloading ${imageUrls.length} images`);
+                    }
+                    
                     this.currentIndex = 0;
                     this._setUIState('content');
                     this._updateContent();
@@ -1179,6 +1474,18 @@
                 return;
             }
 
+            // Check if image is already preloaded and optimized
+            const preloadedBlob = imageOptimizer.preloadedImages.get(url);
+            if (preloadedBlob) {
+                this.currentImageBlobUrl = URL.createObjectURL(preloadedBlob);
+                this.elements.image.src = this.currentImageBlobUrl;
+                this.elements.skeleton.style.display = 'none';
+                this.elements.image.style.display = 'block';
+                this.elements.image.classList.remove('loading');
+                performance.mark('Image loaded from preload cache');
+                return;
+            }
+
             // Check image cache first
             if (imageCache.has(url)) {
                 const cachedBlob = imageCache.get(url);
@@ -1191,19 +1498,26 @@
             }
 
             this.elements.image.classList.add('loading');
-            serverFetch(url).then(res => res.blob()).then(blob => {
-                // Cache the blob for future use
-                if (imageCache.size < 50) { // Limit cache size
-                    imageCache.set(url, blob);
-                }
-                
-                this.currentImageBlobUrl = URL.createObjectURL(blob);
-                this.elements.image.src = this.currentImageBlobUrl;
-                this.elements.image.onload = () => {
+            
+            // Use image optimizer for loading and compression
+            imageOptimizer.preloadImage(url).then(compressedBlob => {
+                if (compressedBlob) {
+                    // Also store in regular cache
+                    if (imageCache.size < 50) {
+                        imageCache.set(url, compressedBlob);
+                    }
+                    
+                    this.currentImageBlobUrl = URL.createObjectURL(compressedBlob);
+                    this.elements.image.src = this.currentImageBlobUrl;
+                    this.elements.image.onload = () => {
+                        this.elements.skeleton.style.display = 'none';
+                        this.elements.image.style.display = 'block';
+                        this.elements.image.classList.remove('loading');
+                    };
+                } else {
                     this.elements.skeleton.style.display = 'none';
-                    this.elements.image.style.display = 'block';
-                    this.elements.image.classList.remove('loading');
-                };
+                    this.elements.image.style.display = 'none';
+                }
             }).catch(error => {
                 console.warn("Image load failed:", error);
                 this.elements.skeleton.style.display = 'none';

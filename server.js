@@ -35,35 +35,88 @@ const db = new sqlite3.Database('japanese_words.db', sqlite3.OPEN_READWRITE, (er
     }
 });
 
-// API endpoint to get all words (optimized with caching)
+// API endpoint to get all words (optimized with caching and pagination)
 app.get('/api/words', (req, res) => {
     // Set cache headers
     res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour
     res.setHeader('ETag', 'words-v1');
     
-    db.all('SELECT word FROM words ORDER BY word', (err, rows) => {
+    // Pagination parameters
+    const limit = parseInt(req.query.limit) || 0; // 0 means no limit (backwards compatibility)
+    const offset = parseInt(req.query.offset) || 0;
+    
+    let query = 'SELECT word FROM words ORDER BY word';
+    let params = [];
+    
+    if (limit > 0) {
+        query += ' LIMIT ? OFFSET ?';
+        params = [limit, offset];
+    }
+    
+    db.all(query, params, (err, rows) => {
         if (err) {
             console.error('Error fetching words:', err);
             res.status(500).json({ error: 'Failed to fetch words' });
         } else {
             const words = rows.map(row => row.word);
-            res.json(words);
+            
+            // Add pagination metadata
+            if (limit > 0) {
+                res.json({
+                    data: words,
+                    pagination: {
+                        limit,
+                        offset,
+                        count: words.length,
+                        hasMore: words.length === limit
+                    }
+                });
+            } else {
+                // Backwards compatibility - return array directly
+                res.json(words);
+            }
         }
     });
 });
 
-// API endpoint to get all kanji data (optimized with caching)
+// API endpoint to get all kanji data (optimized with caching and pagination)
 app.get('/api/kanji', (req, res) => {
     // Set cache headers
     res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour
     res.setHeader('ETag', 'kanji-v1');
     
-    db.all('SELECT kanji, meaning, rtk FROM kanji ORDER BY kanji', (err, rows) => {
+    // Pagination parameters
+    const limit = parseInt(req.query.limit) || 0; // 0 means no limit (backwards compatibility)
+    const offset = parseInt(req.query.offset) || 0;
+    
+    let query = 'SELECT kanji, meaning, rtk FROM kanji ORDER BY kanji';
+    let params = [];
+    
+    if (limit > 0) {
+        query += ' LIMIT ? OFFSET ?';
+        params = [limit, offset];
+    }
+    
+    db.all(query, params, (err, rows) => {
         if (err) {
             console.error('Error fetching kanji:', err);
             res.status(500).json({ error: 'Failed to fetch kanji' });
         } else {
-            res.json(rows);
+            // Add pagination metadata
+            if (limit > 0) {
+                res.json({
+                    data: rows,
+                    pagination: {
+                        limit,
+                        offset,
+                        count: rows.length,
+                        hasMore: rows.length === limit
+                    }
+                });
+            } else {
+                // Backwards compatibility - return array directly
+                res.json(rows);
+            }
         }
     });
 });
