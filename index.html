@@ -216,6 +216,9 @@
             border-bottom: 1px solid var(--border-color);
             position: relative;
             flex-direction: column;
+            /* Enhanced for particle effects */
+            overflow: hidden;
+            min-height: 120px;
         }
         
         #display-word::after {
@@ -237,6 +240,103 @@
             line-height: 1.1;
             font-family: 'Noto Sans JP', sans-serif;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+            /* Enhanced for character animations */
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.1em;
+            /* Enable GPU acceleration for character animations */
+            will-change: transform;
+            transform: translateZ(0);
+        }
+        
+        /* Word character animation styles */
+        .word-char {
+            display: inline-block;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            transform-origin: center center;
+            /* GPU acceleration for each character */
+            will-change: transform, color, text-shadow;
+            transform: translateZ(0);
+        }
+        
+        .word-char.audio-active {
+            animation: charPulse 0.6s ease-in-out;
+            color: var(--primary-color);
+            text-shadow: 0 0 20px rgba(26, 115, 232, 0.5);
+        }
+        
+        .word-char.frequency-high {
+            transform: translateZ(0) scale(1.3) translateY(-8px) rotate(3deg);
+            color: #ff6b6b;
+            text-shadow: 0 0 25px rgba(255, 107, 107, 0.8), 0 0 35px rgba(255, 107, 107, 0.4);
+        }
+        
+        .word-char.frequency-mid {
+            transform: translateZ(0) scale(1.15) translateY(-4px) rotate(-2deg);
+            color: #4ecdc4;
+            text-shadow: 0 0 15px rgba(78, 205, 196, 0.7), 0 0 25px rgba(78, 205, 196, 0.3);
+        }
+        
+        .word-char.frequency-low {
+            transform: translateZ(0) scale(1.08) translateY(-2px) rotate(1deg);
+            color: #45b7d1;
+            text-shadow: 0 0 12px rgba(69, 183, 209, 0.6), 0 0 20px rgba(69, 183, 209, 0.2);
+        }
+        
+        @keyframes charPulse {
+            0% { transform: translateZ(0) scale(1); }
+            30% { transform: translateZ(0) scale(1.2) rotate(3deg); }
+            60% { transform: translateZ(0) scale(0.9) rotate(-2deg); }
+            100% { transform: translateZ(0) scale(1); }
+        }
+        
+        /* Spectrogram particles effect */
+        .spectrogram-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .spectrum-particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: floatUp 2.5s ease-out forwards;
+            pointer-events: none;
+        }
+        
+        .spectrum-particle.high-freq {
+            background: radial-gradient(circle, rgba(255, 107, 107, 0.8) 0%, rgba(255, 107, 107, 0.3) 50%, transparent 100%);
+        }
+        
+        .spectrum-particle.mid-freq {
+            background: radial-gradient(circle, rgba(78, 205, 196, 0.8) 0%, rgba(78, 205, 196, 0.3) 50%, transparent 100%);
+        }
+        
+        .spectrum-particle.low-freq {
+            background: radial-gradient(circle, rgba(69, 183, 209, 0.8) 0%, rgba(69, 183, 209, 0.3) 50%, transparent 100%);
+        }
+        
+        @keyframes floatUp {
+            0% {
+                opacity: 0.9;
+                transform: translateY(0) scale(0.3);
+            }
+            40% {
+                opacity: 0.7;
+                transform: translateY(-40px) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-80px) scale(0.5);
+            }
         }
 
         .word-reading {
@@ -1470,6 +1570,34 @@
         wordDetailsEl.innerHTML = html;
     }
 
+    // --- Word Animation Utilities ---
+    function prepareWordForAnimation(word) {
+        const wordElement = document.querySelector('.word-main');
+        if (!wordElement) return;
+        
+        // Clear any existing particles
+        const existingParticles = document.querySelector('.spectrogram-particles');
+        if (existingParticles) {
+            existingParticles.remove();
+        }
+        
+        // Split word into individual character spans for animation
+        wordElement.innerHTML = word
+            .split('')
+            .map(char => `<span class="word-char">${char}</span>`)
+            .join('');
+        
+        // Add particle container to display-word
+        const displayWordContainer = document.getElementById('display-word');
+        if (displayWordContainer && !displayWordContainer.querySelector('.spectrogram-particles')) {
+            const particleContainer = document.createElement('div');
+            particleContainer.className = 'spectrogram-particles';
+            displayWordContainer.appendChild(particleContainer);
+        }
+        
+        console.log(`🎨 Prepared "${word}" for spectrogram animation with ${word.length} characters`);
+    }
+    
     // --- Main Application Logic ---
     const showRandomWordThrottled = PerformanceUtils.throttle(async function() {
         if (WORD_LIST.length === 0) return;
@@ -1484,6 +1612,10 @@
         const word = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
         
         document.querySelector('.word-main').textContent = word;
+        
+        // Prepare word for character-level animation
+        prepareWordForAnimation(word);
+        
         document.querySelector('.word-reading').textContent = '';
         kanjiBreakdownEl.innerHTML = '';
         
@@ -1809,6 +1941,27 @@
             }
             this.elements.visualizerContainer.classList.remove('is-playing');
             this.elements.audioBtn.innerHTML = ICONS.PLAY;
+            
+            // Clean up word character animations
+            const wordChars = document.querySelectorAll('.word-char');
+            wordChars.forEach(char => {
+                char.classList.remove('frequency-high', 'frequency-mid', 'frequency-low', 'audio-active');
+            });
+            
+            // Clean up particles
+            const particleContainer = document.querySelector('.spectrogram-particles');
+            if (particleContainer) {
+                const particles = particleContainer.querySelectorAll('.spectrum-particle');
+                particles.forEach(particle => {
+                    particle.style.animation = 'none';
+                    particle.style.opacity = '0';
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 100);
+                });
+            }
         }
 
         async playAudio(url) {
@@ -1848,22 +2001,162 @@
             const canvas = this.elements.visualizerCanvas;
             const ctx = this.visualizerCtx;
             
+            // Get the current word for character animation
+            const wordElement = document.querySelector('.word-main');
+            let wordChars = [];
+            
+            // Convert word to individual character elements if not already done
+            if (wordElement && !wordElement.querySelector('.word-char')) {
+                const originalText = wordElement.textContent;
+                wordElement.innerHTML = originalText
+                    .split('')
+                    .map(char => `<span class="word-char">${char}</span>`)
+                    .join('');
+            }
+            
+            // Get word character elements
+            if (wordElement) {
+                wordChars = Array.from(wordElement.querySelectorAll('.word-char'));
+            }
+            
+            // Create particle container if it doesn't exist
+            const wordContainer = document.getElementById('display-word');
+            let particleContainer = wordContainer?.querySelector('.spectrogram-particles');
+            if (wordContainer && !particleContainer) {
+                particleContainer = document.createElement('div');
+                particleContainer.className = 'spectrogram-particles';
+                wordContainer.appendChild(particleContainer);
+            }
+            
+            let frameCount = 0;
             const draw = () => {
                 this.visualizerAnimationId = requestAnimationFrame(draw);
                 this.analyserNode.getByteFrequencyData(dataArray);
                 
+                // Clear and draw spectrogram
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 const barWidth = (canvas.width / bufferLength) * 2.5;
                 let x = 0;
                 
+                // Calculate frequency ranges for better analysis
+                const lowFreqEnd = Math.floor(bufferLength * 0.1);
+                const midFreqEnd = Math.floor(bufferLength * 0.4);
+                
+                let lowFreqAvg = 0, midFreqAvg = 0, highFreqAvg = 0;
+                let lowCount = 0, midCount = 0, highCount = 0;
+                
+                // Draw spectrogram and calculate averages
                 for (let i = 0; i < bufferLength; i++) {
                     const barHeight = (dataArray[i] / 255) * canvas.height * 0.8;
-                    ctx.fillStyle = `rgba(255,255,255,0.8)`;
+                    
+                    // Create color gradient based on frequency
+                    let color;
+                    if (i < lowFreqEnd) {
+                        color = `rgba(69, 183, 209, ${dataArray[i] / 255 * 0.9})`;
+                        lowFreqAvg += dataArray[i];
+                        lowCount++;
+                    } else if (i < midFreqEnd) {
+                        color = `rgba(78, 205, 196, ${dataArray[i] / 255 * 0.9})`;
+                        midFreqAvg += dataArray[i];
+                        midCount++;
+                    } else {
+                        color = `rgba(255, 107, 107, ${dataArray[i] / 255 * 0.9})`;
+                        highFreqAvg += dataArray[i];
+                        highCount++;
+                    }
+                    
+                    ctx.fillStyle = color;
                     ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
                     x += barWidth + 1;
                 }
+                
+                // Calculate average frequencies
+                lowFreqAvg = lowCount > 0 ? lowFreqAvg / lowCount : 0;
+                midFreqAvg = midCount > 0 ? midFreqAvg / midCount : 0;
+                highFreqAvg = highCount > 0 ? highFreqAvg / highCount : 0;
+                
+                // Animate word characters based on frequency analysis
+                if (wordChars.length > 0) {
+                    wordChars.forEach((char, index) => {
+                        // Clear previous classes
+                        char.classList.remove('frequency-high', 'frequency-mid', 'frequency-low', 'audio-active');
+                        
+                        // Determine which frequency range affects this character
+                        const charPosition = index / wordChars.length;
+                        let dominantFreq;
+                        
+                        if (charPosition < 0.33) {
+                            dominantFreq = lowFreqAvg;
+                        } else if (charPosition < 0.66) {
+                            dominantFreq = midFreqAvg;
+                        } else {
+                            dominantFreq = highFreqAvg;
+                        }
+                        
+                        // Apply animation classes based on frequency strength
+                        if (dominantFreq > 120) {
+                            char.classList.add('frequency-high');
+                        } else if (dominantFreq > 80) {
+                            char.classList.add('frequency-mid');
+                        } else if (dominantFreq > 40) {
+                            char.classList.add('frequency-low');
+                        }
+                        
+                        // Add general audio active class for any significant activity
+                        if (dominantFreq > 30) {
+                            char.classList.add('audio-active');
+                        }
+                    });
+                }
+                
+                // Create particle effects every few frames
+                frameCount++;
+                if (frameCount % 8 === 0 && particleContainer) {
+                    this._createSpectrumParticles(particleContainer, lowFreqAvg, midFreqAvg, highFreqAvg);
+                }
             };
             draw();
+        }
+        
+        _createSpectrumParticles(container, lowFreq, midFreq, highFreq) {
+            const frequencies = [
+                { value: lowFreq, class: 'low-freq', threshold: 40 },
+                { value: midFreq, class: 'mid-freq', threshold: 60 },
+                { value: highFreq, class: 'high-freq', threshold: 80 }
+            ];
+            
+            frequencies.forEach(freq => {
+                if (freq.value > freq.threshold) {
+                    const particle = document.createElement('div');
+                    particle.className = `spectrum-particle ${freq.class}`;
+                    
+                    // Random positioning
+                    const size = Math.random() * 8 + 4;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.bottom = '0px';
+                    
+                    container.appendChild(particle);
+                    
+                    // Remove particle after animation
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 2500);
+                }
+            });
+            
+            // Cleanup old particles to prevent memory leaks
+            const particles = container.querySelectorAll('.spectrum-particle');
+            if (particles.length > 50) {
+                for (let i = 0; i < 10; i++) {
+                    if (particles[i] && particles[i].parentNode) {
+                        particles[i].parentNode.removeChild(particles[i]);
+                    }
+                }
+            }
         }
 
         toggleLoop(forceState) {
