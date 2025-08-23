@@ -25,3 +25,11 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# SQLite database files (keep main db but ignore WAL and temp files)
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
