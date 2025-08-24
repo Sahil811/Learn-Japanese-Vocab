@@ -156,6 +156,92 @@
         
         #random-word-btn.loading .spinner { display: block; }
         #random-word-btn.loading .btn-icon { display: none; }
+        
+        /* --- Auto-Loop Button Styles --- */
+        #auto-loop-btn {
+            position: fixed;
+            top: calc(50% - 80px); /* Positioned above the random word button */
+            right: 1.5rem;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 6px 16px rgba(255, 107, 107, 0.35);
+            transition: all var(--transition-speed) ease;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        
+        #auto-loop-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        #auto-loop-btn:active {
+            transform: scale(1);
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+        }
+        
+        #auto-loop-btn:disabled {
+            cursor: not-allowed;
+            background: #b0b0b0;
+            box-shadow: none;
+            transform: none;
+        }
+        
+        #auto-loop-btn.active {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            box-shadow: 0 6px 16px rgba(78, 205, 196, 0.35);
+        }
+        
+        #auto-loop-btn.active:hover {
+            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.4);
+        }
+        
+        #auto-loop-btn .btn-icon {
+            width: 28px;
+            height: 28px;
+        }
+        
+        #auto-loop-btn .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            display: none;
+        }
+        
+        #auto-loop-btn.loading .spinner { display: block; }
+        #auto-loop-btn.loading .btn-icon { display: none; }
+        
+        /* Auto-loop status indicator */
+        .auto-loop-status {
+            position: fixed;
+            top: calc(50% - 140px);
+            right: 1.5rem;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            z-index: 999;
+            display: none;
+            backdrop-filter: blur(10px);
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .auto-loop-status.active {
+            display: block;
+        }
 
         .content-grid {
             display: grid;
@@ -1017,6 +1103,19 @@
             </section>
         </div>
         
+        <!-- Auto-Loop Button -->
+        <button id="auto-loop-btn" title="Auto-Loop Random Words (10 examples each)">
+            <div class="spinner"></div>
+            <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 4V2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10c0-1.19-.22-2.33-.6-3.38L20.05 9.28c.18.72.28 1.47.28 2.25 0 4.41-3.59 8-8 8s-8-3.59-8-8 3.59-8 8-8V6l4-2-4-2zm0 12c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm-1-6v3l2.5 1.5.5-.87L12.5 12V10H11z"/>
+            </svg>
+        </button>
+        
+        <!-- Auto-Loop Status Indicator -->
+        <div class="auto-loop-status" id="auto-loop-status">
+            Word 1/∞
+        </div>
+        
         <!-- MODIFIED: Floating Action Button (container div removed) -->
         <button id="random-word-btn" title="Discover New Word">
             <div class="spinner"></div>
@@ -1654,7 +1753,10 @@
     // --- Word Animation Utilities ---
     function prepareWordForAnimation(word) {
         const wordElement = document.querySelector('.word-main');
-        if (!wordElement) return;
+        if (!wordElement || !word) {
+            console.warn('prepareWordForAnimation: Missing word element or word value', { wordElement, word });
+            return;
+        }
         
         // Clear any existing particles
         const existingParticles = document.querySelector('.spectrogram-particles');
@@ -1730,6 +1832,27 @@
     
     async function showRandomWord() {
         return showRandomWordThrottled();
+    }
+    
+    // Helper function for auto-loop to display word without full data loading
+    function displayWordMain(word) {
+        if (!word) {
+            console.error('displayWordMain: No word provided');
+            return;
+        }
+        
+        // Update main word display
+        document.querySelector('.word-main').textContent = word;
+        prepareWordForAnimation(word);
+        
+        // Show the UI sections
+        wordInfoSection.classList.add('active');
+        immersionSection.classList.add('active');
+        
+        // Clear previous content
+        document.querySelector('.word-reading').textContent = '';
+        document.getElementById('word-details').innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading word details...</p>';
+        kanjiBreakdownEl.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading kanji breakdown...</p>';
     }
 
     // --- Immersion Kit Handler Class ---
@@ -1935,6 +2058,13 @@
 
         navigate(direction) {
             if (this.examples.length < 2) return;
+            
+            // Stop auto-loop if active when user manually navigates
+            if (window.autoLoopManager && window.autoLoopManager.isActive) {
+                window.autoLoopManager.stop();
+                window.autoLoopManager.updateButtonState();
+            }
+            
             this.stopCurrentAudio();
             // Don't reset loop state when navigating
             this.currentIndex = (this.currentIndex + direction + this.examples.length) % this.examples.length;
@@ -2397,6 +2527,12 @@
         handlePlayAll(forceState) {
             this.isPlayingAll = forceState !== undefined ? forceState : !this.isPlayingAll;
             if (this.isPlayingAll) {
+                // Stop auto-loop if active when user starts play-all
+                if (window.autoLoopManager && window.autoLoopManager.isActive) {
+                    window.autoLoopManager.stop();
+                    window.autoLoopManager.updateButtonState();
+                }
+                
                 // When starting play-all, turn off loop functionality and update button state
                 if (this.isLoopingAudio) {
                     this.toggleLoop(false); // This will turn off loop and update UI
@@ -2425,7 +2561,183 @@
             // Loop state was explicitly turned off when play-all started, so don't resume it
         }
     }
+    
+    // --- Auto-Loop Manager Class ---
+    class AutoLoopManager {
+        constructor(immersionHandler) {
+            this.immersionHandler = immersionHandler;
+            this.isActive = false;
+            this.currentWordIndex = 0;
+            this.exampleCount = 0;
+            this.maxExamplesPerWord = 10;
+            this.wordQueue = [];
+            this.statusElement = document.getElementById('auto-loop-status');
+            this.button = document.getElementById('auto-loop-btn');
+            
+            // Restore state from localStorage
+            this.restoreState();
+            this.updateButtonState();
+        }
+        
+        restoreState() {
+            const savedState = localStorage.getItem(`jdojo_${CACHE_VERSION}_autoloop_state`);
+            if (savedState === 'true') {
+                // Don't auto-start on page load, just restore the visual state
+                this.isActive = false;
+            }
+        }
+        
+        saveState() {
+            localStorage.setItem(`jdojo_${CACHE_VERSION}_autoloop_state`, this.isActive.toString());
+        }
+        
+        async toggle() {
+            this.isActive = !this.isActive;
+            this.saveState();
+            
+            if (this.isActive) {
+                await this.start();
+            } else {
+                this.stop();
+            }
+            
+            this.updateButtonState();
+        }
+        
+        async start() {
+            this.currentWordIndex = 0;
+            this.exampleCount = 0;
+            this.statusElement.classList.add('active');
+            
+            // Stop any existing audio/loops from ImmersionKitHandler
+            this.immersionHandler.stopCurrentAudio();
+            if (this.immersionHandler.isLoopingAudio) {
+                this.immersionHandler.toggleLoop(false);
+            }
+            if (this.immersionHandler.isPlayingAll) {
+                this.immersionHandler.handlePlayAll(false);
+            }
+            
+            await this.nextWord();
+        }
+        
+        stop() {
+            this.isActive = false;
+            this.statusElement.classList.remove('active');
+            this.immersionHandler.stopCurrentAudio();
+            this.saveState();
+        }
+        
+        async nextWord() {
+            if (!this.isActive) return;
+            
+            // Check if WORD_LIST is available and populated
+            if (!WORD_LIST || WORD_LIST.length === 0) {
+                console.error('AutoLoopManager: WORD_LIST is not available or empty');
+                this.stop();
+                return;
+            }
+            
+            this.currentWordIndex++;
+            this.exampleCount = 0;
+            this.updateStatus();
+            
+            // Get a random word - WORD_LIST contains strings, not objects
+            const randomWord = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+            
+            if (!randomWord) {
+                console.error('AutoLoopManager: Failed to get random word');
+                this.stop();
+                return;
+            }
+            
+            console.log(`AutoLoopManager: Playing word ${this.currentWordIndex}: ${randomWord}`);
+            
+            // Show the word and load examples
+            displayWordMain(randomWord);
+            
+            // Load word details and kanji data in background (same as regular random word button)
+            Promise.allSettled([
+                fetchWordDetailsBackground(randomWord),
+                loadKanjiDataBackground(randomWord)
+            ]).then(([wordResult, kanjiResult]) => {
+                // Update UI with loaded data as it becomes available
+                if (wordResult.status === 'fulfilled' && wordResult.value) {
+                    displayWordDetails(wordResult.value);
+                } else {
+                    displayWordDetails(null);
+                }
+            }).catch(error => {
+                console.warn('AutoLoopManager background loading error:', error);
+            });
+            
+            // Wait for examples to load
+            await this.immersionHandler.fetchExamplesBackground(randomWord);
+            
+            // Wait a bit for UI to update
+            setTimeout(() => {
+                this.playExamples();
+            }, 500);
+        }
+        
+        async playExamples() {
+            if (!this.isActive || this.immersionHandler.examples.length === 0) {
+                if (this.isActive) {
+                    // If no examples, move to next word immediately
+                    setTimeout(() => this.nextWord(), 1000);
+                }
+                return;
+            }
+            
+            const examples = this.immersionHandler.examples;
+            const totalExamples = examples.length;
+            
+            // Play up to 10 examples, looping if necessary
+            while (this.exampleCount < this.maxExamplesPerWord && this.isActive) {
+                const exampleIndex = this.exampleCount % totalExamples;
+                const example = examples[exampleIndex];
+                
+                if (example?.full_sound_url) {
+                    // Update the immersion handler's current index
+                    this.immersionHandler.currentIndex = exampleIndex;
+                    this.immersionHandler._updateContent();
+                    
+                    // Play the audio
+                    await this.immersionHandler.playAudio(example.full_sound_url);
+                    
+                    // Wait a bit between examples
+                    if (this.isActive) {
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                    }
+                }
+                
+                this.exampleCount++;
+            }
+            
+            // Move to next word after playing 10 examples
+            if (this.isActive) {
+                setTimeout(() => this.nextWord(), 1500);
+            }
+        }
+        
+        updateStatus() {
+            this.statusElement.textContent = `Word ${this.currentWordIndex}/∞`;
+        }
+        
+        updateButtonState() {
+            this.button.classList.toggle('active', this.isActive);
+            this.button.title = this.isActive ? 
+                'Stop Auto-Loop (Currently running)' : 
+                'Auto-Loop Random Words (10 examples each)';
+        }
+    }
+    
+    // Create instances
     const immersionHandler = new ImmersionKitHandler();
+    const autoLoopManager = new AutoLoopManager(immersionHandler);
+    
+    // Make autoLoopManager globally accessible for integration
+    window.autoLoopManager = autoLoopManager;
 
     // --- RTK Edit Functionality ---
     let currentEditingKanji = null;
@@ -2649,6 +2961,11 @@
 
     // --- Event Listeners & Initialization ---
     randomWordBtn.addEventListener('click', showRandomWord);
+    
+    // Auto-loop button event listener
+    document.getElementById('auto-loop-btn').addEventListener('click', () => {
+        autoLoopManager.toggle();
+    });
 
     copyWordBtn.addEventListener('click', () => {
         const word = document.querySelector('.word-main').textContent;
