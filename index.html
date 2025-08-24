@@ -242,6 +242,154 @@
         .auto-loop-status.active {
             display: block;
         }
+        
+        /* --- Word Search Styles --- */
+        .search-container {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .search-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--surface-color);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 0.75rem 1rem;
+            transition: all var(--transition-speed) ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-input-wrapper:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .search-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--text-secondary);
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        #word-search {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            color: var(--text-color);
+            background: transparent;
+            font-family: 'Noto Sans JP', 'Roboto', sans-serif;
+        }
+        
+        #word-search::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+        
+        .search-clear-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 50%;
+            display: none;
+            transition: all var(--transition-speed) ease;
+            margin-left: 0.5rem;
+        }
+        
+        .search-clear-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-color);
+        }
+        
+        .search-clear-btn.visible {
+            display: block;
+        }
+        
+        /* Search Results */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1001;
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+        
+        .search-results.visible {
+            display: block;
+        }
+        
+        .search-result-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .search-result-item:hover {
+            background: rgba(26, 115, 232, 0.05);
+            color: var(--primary-color);
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-result-word {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+        
+        .search-result-highlight {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-variant));
+            color: white;
+            padding: 0.1em 0.2em;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        
+        .search-no-results {
+            padding: 2rem 1rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        .search-loading {
+            padding: 1.5rem 1rem;
+            text-align: center;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .search-loading::before {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
 
         .content-grid {
             display: grid;
@@ -1068,6 +1216,31 @@
                 bottom: 1rem;
                 right: 1rem;
             }
+            
+            /* Search responsive adjustments */
+            .search-container {
+                margin-bottom: 1rem;
+            }
+            
+            .search-input-wrapper {
+                padding: 0.6rem 0.8rem;
+            }
+            
+            #word-search {
+                font-size: 0.9rem;
+            }
+            
+            .search-results {
+                max-height: 250px;
+            }
+            
+            .search-result-item {
+                padding: 0.6rem 0.8rem;
+            }
+            
+            .search-result-word {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
@@ -1080,6 +1253,30 @@
         <div class="content-grid" id="content-grid">
             <section id="word-info-section" class="content-section">
                 <div class="card word-info-card">
+                    <!-- Word Search -->
+                    <div class="search-container">
+                        <div class="search-input-wrapper">
+                            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                            <input 
+                                type="text" 
+                                id="word-search" 
+                                placeholder="Search words (partial search supported)..."
+                                autocomplete="off"
+                                spellcheck="false"
+                            >
+                            <button class="search-clear-btn" id="search-clear-btn" title="Clear search">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="search-results" id="search-results">
+                            <!-- Search results will be populated here -->
+                        </div>
+                    </div>
+                    
                     <div id="display-word">
                         <span class="word-main" role="status" aria-live="polite" tabindex="-1"></span>
                         <span class="word-reading"></span>
@@ -1263,6 +1460,11 @@
     const copyWordBtn = document.getElementById('copy-word-btn');
     const wordInfoSection = document.getElementById('word-info-section');
     const immersionSection = document.getElementById('immersion-section');
+    
+    // Search elements
+    const searchInput = document.getElementById('word-search');
+    const searchResults = document.getElementById('search-results');
+    const searchClearBtn = document.getElementById('search-clear-btn');
 
     // --- SVG Icon Library ---
     const ICONS = {
@@ -2732,9 +2934,272 @@
         }
     }
     
+    // --- Word Search Manager Class ---
+    class WordSearchManager {
+        constructor() {
+            this.searchInput = searchInput;
+            this.searchResults = searchResults;
+            this.searchClearBtn = searchClearBtn;
+            this.isSearching = false;
+            this.searchTimeout = null;
+            
+            this.initEventListeners();
+        }
+        
+        initEventListeners() {
+            // Input event for real-time search
+            this.searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                this.handleSearchInput(query);
+            });
+            
+            // Clear button
+            this.searchClearBtn.addEventListener('click', () => {
+                this.clearSearch();
+            });
+            
+            // Focus and blur events
+            this.searchInput.addEventListener('focus', () => {
+                if (this.searchInput.value.trim()) {
+                    this.showResults();
+                }
+            });
+            
+            this.searchInput.addEventListener('blur', () => {
+                // Delay hiding results to allow clicking on them
+                setTimeout(() => {
+                    this.hideResults();
+                }, 150);
+            });
+            
+            // Keyboard navigation
+            this.searchInput.addEventListener('keydown', (e) => {
+                this.handleKeydown(e);
+            });
+            
+            // Click outside to close
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-container')) {
+                    this.hideResults();
+                }
+            });
+        }
+        
+        handleSearchInput(query) {
+            // Update clear button visibility
+            this.searchClearBtn.classList.toggle('visible', query.length > 0);
+            
+            if (query.length === 0) {
+                this.hideResults();
+                return;
+            }
+            
+            // Debounce search
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = setTimeout(() => {
+                this.performSearch(query);
+            }, 200);
+        }
+        
+        performSearch(query) {
+            if (!WORD_LIST || WORD_LIST.length === 0) {
+                this.showNoResults('Word list not loaded yet...');
+                return;
+            }
+            
+            this.showLoading();
+            
+            // Perform partial search
+            const results = this.searchWords(query);
+            
+            setTimeout(() => {
+                this.displayResults(results, query);
+            }, 100); // Small delay for better UX
+        }
+        
+        searchWords(query) {
+            const normalizedQuery = query.toLowerCase();
+            const results = [];
+            
+            // Search through WORD_LIST
+            for (const word of WORD_LIST) {
+                if (word.toLowerCase().includes(normalizedQuery)) {
+                    results.push({
+                        word: word,
+                        score: this.calculateScore(word, normalizedQuery)
+                    });
+                }
+                
+                // Limit results to prevent performance issues
+                if (results.length >= 50) break;
+            }
+            
+            // Sort by relevance score (higher score = better match)
+            return results.sort((a, b) => b.score - a.score).slice(0, 20);
+        }
+        
+        calculateScore(word, query) {
+            const wordLower = word.toLowerCase();
+            
+            // Exact match gets highest score
+            if (wordLower === query) return 1000;
+            
+            // Starts with query gets high score
+            if (wordLower.startsWith(query)) return 500 + (100 - word.length);
+            
+            // Contains query gets medium score (shorter words ranked higher)
+            if (wordLower.includes(query)) {
+                const index = wordLower.indexOf(query);
+                return 100 - index + (50 - word.length);
+            }
+            
+            return 0;
+        }
+        
+        displayResults(results, query) {
+            if (results.length === 0) {
+                this.showNoResults('No words found matching your search.');
+                return;
+            }
+            
+            let html = '';
+            
+            results.forEach(result => {
+                const highlightedWord = this.highlightMatch(result.word, query);
+                html += `
+                    <div class="search-result-item" data-word="${result.word}">
+                        <span class="search-result-word">${highlightedWord}</span>
+                    </div>
+                `;
+            });
+            
+            this.searchResults.innerHTML = html;
+            this.showResults();
+            
+            // Add click handlers to result items
+            this.searchResults.querySelectorAll('.search-result-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const word = item.dataset.word;
+                    this.selectWord(word);
+                });
+            });
+        }
+        
+        highlightMatch(word, query) {
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return word.replace(regex, '<span class="search-result-highlight">$1</span>');
+        }
+        
+        selectWord(word) {
+            // Clear search
+            this.searchInput.value = '';
+            this.searchClearBtn.classList.remove('visible');
+            this.hideResults();
+            
+            // Display the selected word
+            this.displaySelectedWord(word);
+        }
+        
+        displaySelectedWord(word) {
+            // Stop auto-loop if active
+            if (window.autoLoopManager && window.autoLoopManager.isActive) {
+                window.autoLoopManager.stop();
+                window.autoLoopManager.updateButtonState();
+            }
+            
+            // Show the word immediately
+            displayWordMain(word);
+            
+            // Load word details and examples in background
+            Promise.allSettled([
+                fetchWordDetailsBackground(word),
+                immersionHandler.fetchExamplesBackground(word),
+                loadKanjiDataBackground(word)
+            ]).then(([wordResult, examplesResult, kanjiResult]) => {
+                if (wordResult.status === 'fulfilled' && wordResult.value) {
+                    displayWordDetails(wordResult.value);
+                } else {
+                    displayWordDetails(null);
+                }
+            }).catch(error => {
+                console.warn('Search word background loading error:', error);
+            });
+        }
+        
+        showLoading() {
+            this.searchResults.innerHTML = '<div class="search-loading">Searching...</div>';
+            this.showResults();
+        }
+        
+        showNoResults(message) {
+            this.searchResults.innerHTML = `<div class="search-no-results">${message}</div>`;
+            this.showResults();
+        }
+        
+        showResults() {
+            this.searchResults.classList.add('visible');
+        }
+        
+        hideResults() {
+            this.searchResults.classList.remove('visible');
+        }
+        
+        clearSearch() {
+            this.searchInput.value = '';
+            this.searchClearBtn.classList.remove('visible');
+            this.hideResults();
+            this.searchInput.focus();
+        }
+        
+        handleKeydown(e) {
+            const items = this.searchResults.querySelectorAll('.search-result-item');
+            if (items.length === 0) return;
+            
+            const currentSelected = this.searchResults.querySelector('.search-result-item:hover');
+            let selectedIndex = Array.from(items).indexOf(currentSelected);
+            
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                    this.highlightItem(items, selectedIndex);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, 0);
+                    this.highlightItem(items, selectedIndex);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (selectedIndex >= 0 && items[selectedIndex]) {
+                        const word = items[selectedIndex].dataset.word;
+                        this.selectWord(word);
+                    } else if (items.length > 0) {
+                        // Select first result if none highlighted
+                        const word = items[0].dataset.word;
+                        this.selectWord(word);
+                    }
+                    break;
+                case 'Escape':
+                    this.hideResults();
+                    this.searchInput.blur();
+                    break;
+            }
+        }
+        
+        highlightItem(items, index) {
+            items.forEach(item => item.style.backgroundColor = '');
+            if (items[index]) {
+                items[index].style.backgroundColor = 'rgba(26, 115, 232, 0.1)';
+                items[index].scrollIntoView({ block: 'nearest' });
+            }
+        }
+    }
+    
     // Create instances
     const immersionHandler = new ImmersionKitHandler();
     const autoLoopManager = new AutoLoopManager(immersionHandler);
+    const wordSearchManager = new WordSearchManager();
     
     // Make autoLoopManager globally accessible for integration
     window.autoLoopManager = autoLoopManager;
