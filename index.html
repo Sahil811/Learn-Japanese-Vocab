@@ -1537,6 +1537,38 @@
         }
     }
 
+    // 🚀 OPTIMIZATION: Background loading functions (non-blocking)
+    async function fetchWordDetailsBackground(word) {
+        try {
+            return await fetchWordDetails(word);
+        } catch (error) {
+            console.warn('Background word details loading failed:', error);
+            return null;
+        }
+    }
+
+    async function loadKanjiDataBackground(word) {
+        return new Promise((resolve) => {
+            PerformanceUtils.requestIdleCallback(() => {
+                const uniqueKanji = [...new Set(word.match(/[\u4e00-\u9faf]/g) || [])];
+                if (uniqueKanji.length > 0) {
+                    const kanjiDataList = uniqueKanji.map(kanji => kanjiMap.get(kanji)).filter(Boolean);
+                    
+                    if (kanjiDataList.length > 0) {
+                        // Use virtual scrolling for large lists
+                        const virtualRenderer = new VirtualScrollRenderer(kanjiBreakdownEl);
+                        virtualRenderer.setItems(kanjiDataList);
+                    } else {
+                        kanjiBreakdownEl.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">Kanji data not available.</p>`;
+                    }
+                } else {
+                    kanjiBreakdownEl.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">This word contains no kanji.</p>`;
+                }
+                resolve(true);
+            });
+        });
+    }
+
     // --- UI Update Functions ---
     function displayWordDetails(wordData) {
         const wordDetailsEl = document.getElementById('word-details');
@@ -1611,49 +1643,40 @@
         
         const word = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
         
+        // 🚀 OPTIMIZATION: Show word immediately for instant feedback
         document.querySelector('.word-main').textContent = word;
-        
-        // Prepare word for character-level animation
         prepareWordForAnimation(word);
         
+        // Show the word section immediately with basic content
         document.querySelector('.word-reading').textContent = '';
-        kanjiBreakdownEl.innerHTML = '';
+        document.getElementById('word-details').innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading word details...</p>';
+        kanjiBreakdownEl.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading kanji breakdown...</p>';
         
-        try {
-            const wordData = await fetchWordDetails(word);
-            displayWordDetails(wordData);
-        } catch (error) {
-            displayWordDetails(null);
-        }
-
-        const uniqueKanji = [...new Set(word.match(/[\u4e00-\u9faf]/g) || [])];
-        if (uniqueKanji.length > 0) {
-            // Use requestIdleCallback for non-critical kanji rendering
-            PerformanceUtils.requestIdleCallback(() => {
-                const kanjiDataList = uniqueKanji.map(kanji => kanjiMap.get(kanji)).filter(Boolean);
-                
-                if (kanjiDataList.length > 0) {
-                    // Use virtual scrolling for large lists
-                    const virtualRenderer = new VirtualScrollRenderer(kanjiBreakdownEl);
-                    virtualRenderer.setItems(kanjiDataList);
-                } else {
-                    kanjiBreakdownEl.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">Kanji data not available.</p>`;
-                }
-            });
-        } else {
-            kanjiBreakdownEl.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">This word contains no kanji.</p>`;
-        }
-        
-        await immersionHandler.fetchExamples(word);
-        
-        // Animate in the new content
+        // Show the UI immediately
         setTimeout(() => {
             wordInfoSection.classList.add('active');
             immersionSection.classList.add('active');
         }, 50);
-
+        
+        // Re-enable button immediately for better UX
         randomWordBtn.classList.remove('loading');
         randomWordBtn.disabled = false;
+        
+        // 🚀 OPTIMIZATION: Load API data in background (non-blocking)
+        Promise.allSettled([
+            fetchWordDetailsBackground(word),
+            immersionHandler.fetchExamplesBackground(word),
+            loadKanjiDataBackground(word)
+        ]).then(([wordResult, examplesResult, kanjiResult]) => {
+            // Update UI with loaded data as it becomes available
+            if (wordResult.status === 'fulfilled' && wordResult.value) {
+                displayWordDetails(wordResult.value);
+            } else {
+                displayWordDetails(null);
+            }
+        }).catch(error => {
+            console.warn('Background loading error:', error);
+        });
     }, 1000); // Throttle to max 1 request per second
     
     async function showRandomWord() {
@@ -1892,6 +1915,63 @@
                 }
             } catch (error) {
                 this._setUIState('error', "Failed to fetch examples.", error.message);
+            }
+        }
+
+        // 🚀 OPTIMIZATION: Background fetch method (non-blocking)
+        async fetchExamplesBackground(word) {
+            try {
+                this.lastSearchWord = word;
+                await this._ensureMetadata();
+                const response = await serverFetch('https://apiv2.immersionkit.com/search', { q: word, exactMatch: 'false', limit: '50', sort: 'sentence_length:asc' });
+                const rawExamples = (await response.json()).examples || [];
+                
+                if (rawExamples.length > 0) {
+                    const linodeBaseUrl = 'https://us-southeast-1.linodeobjects.com/immersionkit/media/';
+                    this.examples = rawExamples.map(ex => {
+                        const slug = ex.title || '';
+                        const prettyTitle = this.deckTitleMap?.[slug]?.title || slug;
+                        const mediaType = ex.id?.split('_')[0] || '';
+                        return { 
+                            ...ex, 
+                            full_image_url: ex.image ? `${linodeBaseUrl}${mediaType}/${prettyTitle}/media/${ex.image}` : '',
+                            full_sound_url: ex.sound ? `${linodeBaseUrl}${mediaType}/${prettyTitle}/media/${ex.sound}` : ''
+                        };
+                    });
+                    
+                    // Preload images in background
+                    const imageUrls = this.examples
+                        .filter(ex => ex.full_image_url)
+                        .map(ex => ex.full_image_url)
+                        .slice(0, 5);
+                    
+                    if (imageUrls.length > 0) {
+                        imageOptimizer.preloadImagesInBackground(imageUrls);
+                    }
+                    
+                    this.currentIndex = 0;
+                    this._setUIState('content');
+                    this._updateContent();
+                    
+                    // Start audio if appropriate
+                    setTimeout(() => {
+                        if (this.examples[0]?.full_sound_url) {
+                            this.playAudio(this.examples[0].full_sound_url);
+                            if (this.isLoopingAudio) {
+                                this.audioLoop();
+                            }
+                        }
+                    }, 150);
+                    
+                    return true;
+                } else {
+                    this._setUIState('empty', 'No examples found for this word.');
+                    return false;
+                }
+            } catch (error) {
+                console.warn('Background examples loading failed:', error);
+                this._setUIState('error', "Failed to fetch examples.", error.message);
+                return false;
             }
         }
 
