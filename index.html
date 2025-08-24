@@ -162,19 +162,25 @@
             position: fixed;
             top: calc(50% - 80px); /* Positioned above the random word button */
             right: 1.5rem;
-            width: 60px;
+            min-width: 60px;
             height: 60px;
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
             color: white;
             border: none;
-            border-radius: 50%;
+            border-radius: 30px;
             cursor: pointer;
-            display: grid;
-            place-items: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             box-shadow: 0 6px 16px rgba(255, 107, 107, 0.35);
             transition: all var(--transition-speed) ease;
             z-index: 1000;
             overflow: hidden;
+            padding: 0 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            text-align: center;
         }
         
         #auto-loop-btn:hover {
@@ -199,6 +205,59 @@
             box-shadow: 0 6px 16px rgba(78, 205, 196, 0.35);
         }
         
+        /* --- Kanji Mode Button Styles --- */
+        #kanji-mode-btn {
+            position: fixed;
+            top: calc(50% - 160px); /* Positioned above the auto-loop button */
+            right: 1.5rem;
+            min-width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 16px rgba(156, 39, 176, 0.35);
+            transition: all var(--transition-speed) ease;
+            z-index: 1000;
+            overflow: hidden;
+            padding: 0 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            text-align: center;
+        }
+        
+        #kanji-mode-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(156, 39, 176, 0.4);
+        }
+        
+        #kanji-mode-btn:active {
+            transform: scale(1);
+            box-shadow: 0 4px 10px rgba(156, 39, 176, 0.3);
+        }
+        
+        #kanji-mode-btn:disabled {
+            cursor: not-allowed;
+            background: #b0b0b0;
+            box-shadow: none;
+            transform: none;
+        }
+        
+        #kanji-mode-btn.active {
+            background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+            box-shadow: 0 6px 16px rgba(233, 30, 99, 0.35);
+        }
+        
+        #kanji-mode-btn .btn-icon {
+            width: 28px;
+            height: 28px;
+        }
+        
         #auto-loop-btn.active:hover {
             box-shadow: 0 8px 20px rgba(78, 205, 196, 0.4);
         }
@@ -221,27 +280,7 @@
         #auto-loop-btn.loading .spinner { display: block; }
         #auto-loop-btn.loading .btn-icon { display: none; }
         
-        /* Auto-loop status indicator */
-        .auto-loop-status {
-            position: fixed;
-            top: calc(50% - 140px);
-            right: 1.5rem;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            z-index: 999;
-            display: none;
-            backdrop-filter: blur(10px);
-            min-width: 60px;
-            text-align: center;
-        }
-        
-        .auto-loop-status.active {
-            display: block;
-        }
+        /* Status is now shown directly in buttons - removed separate status elements */
         
         /* --- Floating Search Toggle Button --- */
         #search-toggle-btn {
@@ -859,6 +898,223 @@
             transition: all var(--transition-speed) ease;
         }
         
+        /* Enhanced kanji character with audio feedback */
+        .kanji-char-enhanced {
+            background: linear-gradient(135deg, #e8f0fe 0%, #dde7f8 100%, #c8daf5 100%);
+            border: 2px solid transparent;
+            position: relative;
+        }
+        
+        .kanji-char-enhanced::before {
+            content: '🎵';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            font-size: 0.6rem;
+            background: var(--success-color);
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: grid;
+            place-items: center;
+            opacity: 0;
+            transform: scale(0.7);
+            transition: all var(--transition-speed) ease;
+            z-index: 2;
+        }
+        
+        .kanji-char-enhanced:hover::before {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .kanji-char-enhanced:hover {
+            background: linear-gradient(135deg, #c8daf5 0%, #a8c7f0 100%);
+            border-color: var(--success-color);
+            transform: translateZ(0) scale(1.08);
+            box-shadow: 0 4px 12px rgba(52, 168, 83, 0.3);
+        }
+        
+        .kanji-char-enhanced:active {
+            transform: translateZ(0) scale(1.05);
+            box-shadow: 0 2px 8px rgba(52, 168, 83, 0.4);
+        }
+        
+        /* Kanji selection feedback indicator */
+        .kanji-selection-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--success-color) 0%, #2d7a3e 100%);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius-md);
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(52, 168, 83, 0.3);
+            z-index: 10000;
+            animation: slideInRight 0.3s ease, pulseGlow 1.5s ease-in-out;
+            pointer-events: none;
+        }
+        
+        .kanji-selection-indicator.fade-out {
+            animation: slideOutRight 0.3s ease;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 0 4px 12px rgba(52, 168, 83, 0.3);
+            }
+            50% {
+                box-shadow: 0 6px 20px rgba(52, 168, 83, 0.5);
+            }
+        }
+        
+        /* Audio status indicator */
+        .audio-status-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 10001;
+            animation: audioIndicatorIn 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .audio-status-indicator.fade-out {
+            animation: audioIndicatorOut 0.3s ease;
+        }
+        
+        .audio-status-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .audio-status-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .audio-status-text strong {
+            font-size: 1.2rem;
+            color: var(--success-color);
+        }
+        
+        .audio-status-text span {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        
+        /* Mini audio visualizer */
+        .audio-visualizer-mini {
+            display: flex;
+            align-items: end;
+            gap: 3px;
+            height: 20px;
+        }
+        
+        .audio-bar {
+            width: 3px;
+            background: var(--success-color);
+            border-radius: 2px;
+            animation: audioBarPulse 0.8s ease-in-out infinite;
+        }
+        
+        .audio-bar:nth-child(1) { animation-delay: 0s; }
+        .audio-bar:nth-child(2) { animation-delay: 0.2s; }
+        .audio-bar:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes audioIndicatorIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        
+        @keyframes audioIndicatorOut {
+            from {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+        }
+        
+        @keyframes audioBarPulse {
+            0%, 100% {
+                height: 6px;
+                opacity: 0.7;
+            }
+            50% {
+                height: 20px;
+                opacity: 1;
+            }
+        }
+        
+        /* Kanji mode active state */
+        .kanji-card.kanji-mode-active {
+            background: linear-gradient(to right, #fef4ff, #f3e5f5);
+            border-left-color: #9c27b0;
+            animation: kanjiModeGlow 2s ease-in-out infinite;
+        }
+        
+        .kanji-card.kanji-mode-active .kanji-char-enhanced {
+            background: linear-gradient(135deg, #e1bee7 0%, #ce93d8 100%);
+            border-color: #9c27b0;
+        }
+        
+        .kanji-card.kanji-mode-active .kanji-char-enhanced::before {
+            opacity: 1;
+            transform: scale(1);
+            background: #e91e63;
+        }
+        
+        @keyframes kanjiModeGlow {
+            0%, 100% {
+                box-shadow: 0 2px 6px rgba(156, 39, 176, 0.2);
+            }
+            50% {
+                box-shadow: 0 4px 12px rgba(156, 39, 176, 0.4);
+            }
+        }
+        
         .kanji-char:hover {
             transform: translateZ(0) scale(1.05);
             background: linear-gradient(135deg, #dde7f8 0%, #c8daf5 100%);
@@ -1399,6 +1655,14 @@
                 top: auto;
                 bottom: 9rem; /* Position above auto-loop button */
             }
+            
+            #kanji-mode-btn {
+                width: 54px;
+                height: 54px;
+                right: 1rem;
+                top: auto;
+                bottom: 15rem; /* Position above search button */
+            }
         }
     </style>
 </head>
@@ -1441,6 +1705,16 @@
             </svg>
         </button>
         
+        <!-- Kanji Mode Button -->
+        <button id="kanji-mode-btn" title="Kanji Learning Mode - Click any kanji to hear example words">
+            <div class="spinner"></div>
+            <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 13h6c0-1.65-1.35-3-3-3s-3 1.35-3 3zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM12 20c-4.41 0-8-3.59-8-8 0-1.85.63-3.55 1.69-4.9l1.41 1.41C6.3 9.58 6 10.76 6 12c0 3.31 2.69 6 6 6s6-2.69 6-6-2.69-6-6-6c-1.24 0-2.42.3-3.51.89L7.1 5.48C8.45 4.37 10.15 3.75 12 3.75c4.55 0 8.25 3.69 8.25 8.25S16.55 20 12 20z"/>
+                <!-- Kanji character overlay -->
+                <text x="12" y="16" text-anchor="middle" fill="currentColor" font-size="8" font-family="Noto Sans JP">漢</text>
+            </svg>
+        </button>
+        
         <!-- Auto-Loop Button -->
         <button id="auto-loop-btn" title="Auto-Loop Random Words (10 examples each)">
             <div class="spinner"></div>
@@ -1449,10 +1723,7 @@
             </svg>
         </button>
         
-        <!-- Auto-Loop Status Indicator -->
-        <div class="auto-loop-status" id="auto-loop-status">
-            Word 1/∞
-        </div>
+        <!-- Status is now shown directly in buttons -->
         
         <!-- MODIFIED: Floating Action Button (container div removed) -->
         <button id="random-word-btn" title="Discover New Word">
@@ -1734,7 +2005,7 @@
             
             const processedRTK = processRTKText(kanjiData.rtk);
             div.innerHTML = `
-                <div class="kanji-char" onclick="loadRandomWordWithKanji('${kanjiData.kanji}')" title="Click to find a random word containing this kanji">
+                <div class="kanji-char kanji-char-enhanced" onclick="loadRandomWordWithKanji('${kanjiData.kanji}')" title="🎵 Click to hear a word containing this kanji" data-kanji="${kanjiData.kanji}">
                     <span class="kanji-char-clickable">
                         ${kanjiData.kanji}
                     </span>
@@ -1767,7 +2038,7 @@
                 const processedRTK = processRTKText(kanjiData.rtk);
                 html += `
                     <div class="kanji-card">
-                        <div class="kanji-char" onclick="loadRandomWordWithKanji('${kanjiData.kanji}')" title="Click to find a random word containing this kanji">
+                        <div class="kanji-char kanji-char-enhanced" onclick="loadRandomWordWithKanji('${kanjiData.kanji}')" title="🎵 Click to hear a word containing this kanji" data-kanji="${kanjiData.kanji}">
                             <span class="kanji-char-clickable">
                                 ${kanjiData.kanji}
                             </span>
@@ -2104,10 +2375,21 @@
         });
     }
 
-    // Function to load a random word containing a specific kanji
+    // Enhanced function to load a random word containing a specific kanji with auto-play
     async function loadRandomWordWithKanji(kanji) {
         try {
             console.log(`🎯 Loading random word containing kanji: ${kanji}`);
+            
+            // If kanji mode is active and this is a new kanji selection, start the sequence
+            if (window.kanjiModeManager && window.kanjiModeManager.isActive) {
+                if (window.kanjiModeManager.selectedKanji !== kanji) {
+                    console.log(`🎆 Starting new kanji sequence for: ${kanji}`);
+                    window.kanjiModeManager.startKanjiSequence(kanji);
+                }
+            }
+            
+            // Visual feedback for kanji selection
+            showKanjiSelectionFeedback(kanji);
             
             // Show loading state similar to regular random word
             randomWordBtn.classList.add('loading');
@@ -2164,6 +2446,11 @@
                 } else {
                     displayWordDetails(null);
                 }
+                
+                // 🎵 AUTO-PLAY: Play first audio example automatically after data loads
+                setTimeout(() => {
+                    playFirstKanjiExample(kanji, word);
+                }, 800); // Wait for UI to settle
             }).catch(error => {
                 console.warn('Background loading error:', error);
             });
@@ -2180,9 +2467,136 @@
                 ? `No words found containing kanji: ${kanji}`
                 : 'Failed to load word. Please try again.';
             
-            // You could add a toast notification here
-            alert(errorMsg);
+            // Show toast notification instead of alert
+            showNotification(errorMsg, 'error');
         }
+    }
+    
+    // Function to show visual feedback when a kanji is selected
+    function showKanjiSelectionFeedback(kanji) {
+        // Create a floating kanji indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'kanji-selection-indicator';
+        indicator.textContent = `🎯 ${kanji}`;
+        
+        // Add it to the page
+        document.body.appendChild(indicator);
+        
+        // Animate and remove
+        setTimeout(() => {
+            indicator.classList.add('fade-out');
+            setTimeout(() => indicator.remove(), 300);
+        }, 1500);
+        
+        console.log(`🎯 Selected kanji: ${kanji} for word discovery`);
+    }
+    
+    // Function to automatically play the first audio example for a kanji word
+    async function playFirstKanjiExample(kanji, word) {
+        try {
+            // Check if we have examples loaded
+            if (immersionHandler.examples && immersionHandler.examples.length > 0) {
+                const firstExample = immersionHandler.examples[0];
+                
+                if (firstExample?.full_sound_url) {
+                    console.log(`🎵 Auto-playing first example for ${kanji} word: ${word}`);
+                    
+                    // Set the immersion handler to the first example
+                    immersionHandler.currentIndex = 0;
+                    immersionHandler._updateContent();
+                    
+                    // Show audio status indicator
+                    showAudioStatusIndicator(kanji, word, true);
+                    
+                    // Auto-play notification removed to reduce clutter
+                    
+                    // Play the audio
+                    await immersionHandler.playAudio(firstExample.full_sound_url);
+                    
+                    // Hide audio status indicator when done
+                    setTimeout(() => {
+                        showAudioStatusIndicator(kanji, word, false);
+                    }, 1000);
+                    
+                    // 🔄 AUTO-CONTINUE: If kanji mode is active and this kanji is selected, continue with same kanji
+                    if (window.kanjiModeManager && window.kanjiModeManager.isActive && window.kanjiModeManager.selectedKanji === kanji) {
+                        // Continue playing words with the same kanji indefinitely
+                        setTimeout(() => {
+                            console.log(`🔄 Continuing with kanji ${kanji} (word ${window.kanjiModeManager.currentWordCount})`);
+                            window.kanjiModeManager.playNextWordWithKanji();
+                        }, 2000); // Wait 2 seconds after audio finishes
+                    }
+                } else {
+                    console.log(`No audio available for ${kanji} word: ${word}`);
+                    
+                    // Continue to next word even if no audio, if in kanji mode
+                    if (window.kanjiModeManager && window.kanjiModeManager.isActive && window.kanjiModeManager.selectedKanji === kanji) {
+                        setTimeout(() => {
+                            window.kanjiModeManager.playNextWordWithKanji();
+                        }, 1500);
+                    }
+                }
+            } else {
+                console.log(`No examples loaded yet for ${kanji} word: ${word}`);
+                
+                // Continue to next word even if examples failed to load
+                if (window.kanjiModeManager && window.kanjiModeManager.isActive && window.kanjiModeManager.selectedKanji === kanji) {
+                    setTimeout(() => {
+                        window.kanjiModeManager.playNextWordWithKanji();
+                    }, 2000);
+                }
+            }
+        } catch (error) {
+            console.warn('Error auto-playing kanji example:', error);
+            showAudioStatusIndicator(kanji, word, false);
+            showNotification('Audio playback failed', 'error');
+            
+            // Continue to next word even on error if in kanji mode
+            if (window.kanjiModeManager && window.kanjiModeManager.isActive && window.kanjiModeManager.selectedKanji === kanji) {
+                if (window.kanjiModeManager.currentWordCount < window.kanjiModeManager.maxWordsPerKanji) {
+                    setTimeout(() => {
+                        window.kanjiModeManager.playNextWordWithKanji();
+                    }, 1500);
+                }
+            }
+        }
+    }
+    
+    // Function to show audio status indicator
+    function showAudioStatusIndicator(kanji, word, isPlaying) {
+        const existingIndicator = document.querySelector('.audio-status-indicator');
+        
+        if (!isPlaying) {
+            if (existingIndicator) {
+                existingIndicator.classList.add('fade-out');
+                setTimeout(() => existingIndicator.remove(), 300);
+            }
+            return;
+        }
+        
+        // Remove existing indicator
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+        
+        // Create new indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'audio-status-indicator';
+        indicator.innerHTML = `
+            <div class="audio-status-content">
+                <div class="audio-visualizer-mini">
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                </div>
+                <div class="audio-status-text">
+                    <strong>🎵 ${kanji}</strong>
+                    <span>${word}</span>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(indicator);
     }
 
     // --- UI Update Functions ---
@@ -3030,6 +3444,173 @@
         }
     }
     
+    // --- Kanji Mode Manager Class ---
+    class KanjiModeManager {
+        constructor(immersionHandler) {
+            this.immersionHandler = immersionHandler;
+            this.isActive = false;
+            this.button = document.getElementById('kanji-mode-btn');
+            this.selectedKanji = null; // The currently selected kanji to focus on
+            this.currentWordCount = 0; // Track how many words have been played
+            this.maxWordsPerKanji = 5; // Play 5 different words per kanji
+            // Status will be shown in button itself
+            
+            // Restore state from localStorage
+            this.restoreState();
+            this.updateButtonState();
+            this.initEventListeners();
+        }
+        
+        // Status is now shown directly in the button - no separate element needed
+        
+        initEventListeners() {
+            if (this.button) {
+                this.button.addEventListener('click', () => this.toggle());
+            }
+        }
+        
+        restoreState() {
+            const savedState = localStorage.getItem(`jdojo_${CACHE_VERSION}_kanji_mode_state`);
+            if (savedState === 'true') {
+                // Don't auto-start on page load, just restore the visual state
+                this.isActive = false;
+            }
+        }
+        
+        saveState() {
+            localStorage.setItem(`jdojo_${CACHE_VERSION}_kanji_mode_state`, this.isActive.toString());
+        }
+        
+        async toggle() {
+            this.isActive = !this.isActive;
+            this.saveState();
+            
+            if (this.isActive) {
+                await this.start();
+            } else {
+                this.stop();
+            }
+            
+            this.updateButtonState();
+        }
+        
+        async start() {
+            console.log('🌯 Starting Kanji Learning Mode');
+            
+            // Stop Auto-Loop if it's active (mutual exclusivity)
+            if (window.autoLoopManager && window.autoLoopManager.isActive) {
+                console.log('Kanji Mode: Stopping active Auto-Loop');
+                window.autoLoopManager.isActive = false; // Force set to false first
+                window.autoLoopManager.stop();
+            }
+            
+            this.immersionHandler.stopCurrentAudio();
+            if (this.immersionHandler.isLoopingAudio) {
+                this.immersionHandler.toggleLoop(false);
+            }
+            if (this.immersionHandler.isPlayingAll) {
+                this.immersionHandler.handlePlayAll(false);
+            }
+            
+            // Reset counters
+            this.currentWordCount = 0;
+            this.selectedKanji = null;
+            
+            // Update button to show status
+            this.updateButtonState();
+            
+            // Show notification (simplified)
+            showNotification('🌯 Kanji Mode: Click any kanji to start playing words!', 'info');
+            
+            // Highlight all kanji cards
+            this.highlightKanjiCards(true);
+        }
+        
+        stop() {
+            console.log('🌯 Stopping Kanji Learning Mode');
+            this.isActive = false; // Ensure isActive is set to false
+            this.selectedKanji = null; // Clear selected kanji
+            this.currentWordCount = 0; // Reset counter
+            
+            this.immersionHandler.stopCurrentAudio();
+            this.saveState();
+            
+            // Update button to remove status
+            this.updateButtonState();
+            
+            // Remove kanji highlights
+            this.highlightKanjiCards(false);
+            
+            showNotification('Kanji Mode stopped', 'info');
+        }
+        
+        // Method to start playing words containing a specific kanji
+        async startKanjiSequence(kanji) {
+            if (!this.isActive) return;
+            
+            this.selectedKanji = kanji;
+            this.currentWordCount = 0;
+            
+            console.log(`🌯 Starting sequence for kanji: ${kanji}`);
+            
+            // Update status
+            this.updateStatus();
+            
+            // Start playing words with this kanji
+            this.playNextWordWithKanji();
+        }
+        
+        async playNextWordWithKanji() {
+            if (!this.isActive || !this.selectedKanji) return;
+            
+            this.currentWordCount++;
+            
+            // Update status
+            this.updateStatus();
+            
+            console.log(`🌯 Playing word ${this.currentWordCount} containing kanji: ${this.selectedKanji}`);
+            
+            // Load a random word containing the selected kanji
+            await loadRandomWordWithKanji(this.selectedKanji);
+        }
+        
+        updateStatus() {
+            // Status is now shown in button itself
+            this.updateButtonState();
+        }
+        
+        highlightKanjiCards(highlight) {
+            const kanjiCards = document.querySelectorAll('.kanji-card');
+            kanjiCards.forEach(card => {
+                if (highlight) {
+                    card.classList.add('kanji-mode-active');
+                } else {
+                    card.classList.remove('kanji-mode-active');
+                }
+            });
+        }
+        
+        updateButtonState() {
+            if (this.button) {
+                this.button.classList.toggle('active', this.isActive);
+                
+                if (this.isActive && this.selectedKanji) {
+                    // Show just kanji and number when active with selected kanji
+                    this.button.textContent = `${this.selectedKanji} ${this.currentWordCount}`;
+                    this.button.title = `Kanji Mode: Playing words with "${this.selectedKanji}" (Word ${this.currentWordCount}) - Click to stop`;
+                } else if (this.isActive) {
+                    // Show just kanji when active but no kanji selected
+                    this.button.textContent = '漢';
+                    this.button.title = 'Kanji Mode active - Click any kanji character to start playing words';
+                } else {
+                    // Show default button when inactive
+                    this.button.textContent = '漢';
+                    this.button.title = 'Kanji Learning Mode - Click to activate, then click any kanji';
+                }
+            }
+        }
+    }
+    
     // --- Auto-Loop Manager Class ---
     class AutoLoopManager {
         constructor(immersionHandler) {
@@ -3039,7 +3620,7 @@
             this.exampleCount = 0;
             this.maxExamplesPerWord = 10;
             this.wordQueue = [];
-            this.statusElement = document.getElementById('auto-loop-status');
+            // Status will be shown in button itself - no separate element needed
             this.button = document.getElementById('auto-loop-btn');
             
             // Restore state from localStorage
@@ -3075,7 +3656,16 @@
         async start() {
             this.currentWordIndex = 0;
             this.exampleCount = 0;
-            this.statusElement.classList.add('active');
+            
+            // Stop Kanji Mode if it's active (mutual exclusivity)
+            if (window.kanjiModeManager && window.kanjiModeManager.isActive) {
+                console.log('Auto-Loop: Stopping active Kanji Mode');
+                window.kanjiModeManager.isActive = false; // Force set to false first
+                window.kanjiModeManager.stop();
+            }
+            
+            // Update button to show active status
+            this.updateButtonState();
             
             // Stop any existing audio/loops from ImmersionKitHandler
             this.immersionHandler.stopCurrentAudio();
@@ -3091,7 +3681,8 @@
         
         stop() {
             this.isActive = false;
-            this.statusElement.classList.remove('active');
+            // Update button to show inactive status
+            this.updateButtonState();
             this.immersionHandler.stopCurrentAudio();
             this.saveState();
         }
@@ -3189,14 +3780,24 @@
         }
         
         updateStatus() {
-            this.statusElement.textContent = `Word ${this.currentWordIndex}/∞`;
+            // Status is now shown in button itself
+            this.updateButtonState();
         }
         
         updateButtonState() {
-            this.button.classList.toggle('active', this.isActive);
-            this.button.title = this.isActive ? 
-                'Stop Auto-Loop (Currently running)' : 
-                'Auto-Loop Random Words (10 examples each)';
+            if (this.button) {
+                this.button.classList.toggle('active', this.isActive);
+                
+                if (this.isActive) {
+                    // Show just the word count when active
+                    this.button.textContent = `${this.currentWordIndex}`;
+                    this.button.title = `Auto-Loop active: Playing word ${this.currentWordIndex} - Click to stop`;
+                } else {
+                    // Show default button when inactive
+                    this.button.textContent = '🔄';
+                    this.button.title = 'Auto-Loop Random Words (10 examples each) - Click to start';
+                }
+            }
         }
     }
     
@@ -3524,10 +4125,12 @@
     // Create instances
     const immersionHandler = new ImmersionKitHandler();
     const autoLoopManager = new AutoLoopManager(immersionHandler);
+    const kanjiModeManager = new KanjiModeManager(immersionHandler);
     const wordSearchManager = new WordSearchManager();
     
-    // Make autoLoopManager globally accessible for integration
+    // Make managers globally accessible for integration
     window.autoLoopManager = autoLoopManager;
+    window.kanjiModeManager = kanjiModeManager;
 
     // --- RTK Edit Functionality ---
     let currentEditingKanji = null;
@@ -3665,7 +4268,7 @@
         notification.className = `notification notification-${type}`;
         notification.innerHTML = `
             <div class="notification-content">
-                <span class="notification-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+                <span class="notification-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : '🎵'}</span>
                 <span class="notification-message">${message}</span>
             </div>
         `;
@@ -3677,61 +4280,79 @@
             style.textContent = `
                 .notification {
                     position: fixed;
-                    top: 2rem;
-                    right: 2rem;
-                    padding: 1rem 1.5rem;
+                    top: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: white;
+                    border: 1px solid var(--border-color);
                     border-radius: var(--border-radius-md);
-                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-                    z-index: 10001;
-                    animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
-                    backdrop-filter: blur(10px);
-                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    z-index: 10000;
+                    animation: notificationSlideIn 0.3s ease;
+                    min-width: 300px;
+                    max-width: 500px;
                 }
                 
                 .notification-success {
-                    background: rgba(52, 168, 83, 0.95);
-                    color: white;
+                    border-color: var(--success-color);
+                    background: linear-gradient(135deg, #e8f5e8 0%, #f0fff0 100%);
                 }
                 
                 .notification-error {
-                    background: rgba(234, 67, 53, 0.95);
-                    color: white;
+                    border-color: var(--error-color);
+                    background: linear-gradient(135deg, #ffeaea 0%, #fff5f5 100%);
+                }
+                
+                .notification-warning {
+                    border-color: #ff9800;
+                    background: linear-gradient(135deg, #fff3e0 0%, #fffaf0 100%);
                 }
                 
                 .notification-info {
-                    background: rgba(26, 115, 232, 0.95);
-                    color: white;
+                    border-color: var(--primary-color);
+                    background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
                 }
                 
                 .notification-content {
                     display: flex;
                     align-items: center;
                     gap: 0.75rem;
+                    padding: 0.75rem 1rem;
                 }
                 
                 .notification-icon {
-                    font-size: 1.25rem;
+                    font-size: 1.2rem;
+                    flex-shrink: 0;
                 }
                 
                 .notification-message {
+                    color: var(--text-color);
                     font-weight: 500;
                 }
                 
-                @keyframes slideInRight {
+                .notification.fade-out {
+                    animation: notificationSlideOut 0.3s ease;
+                }
+                
+                @keyframes notificationSlideIn {
                     from {
-                        transform: translateX(100%);
                         opacity: 0;
+                        transform: translateX(-50%) translateY(-20px);
                     }
                     to {
-                        transform: translateX(0);
                         opacity: 1;
+                        transform: translateX(-50%) translateY(0);
                     }
                 }
                 
-                @keyframes fadeOut {
+                @keyframes notificationSlideOut {
+                    from {
+                        opacity: 1;
+                        transform: translateX(-50%) translateY(0);
+                    }
                     to {
                         opacity: 0;
-                        transform: translateX(100%);
+                        transform: translateX(-50%) translateY(-20px);
                     }
                 }
             `;
