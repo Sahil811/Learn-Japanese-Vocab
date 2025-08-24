@@ -839,6 +839,23 @@
             padding: 1.25rem; flex: 1; display: flex; flex-direction: column;
             justify-content: center; min-height: 150px;
             background-color: #fcfcfc;
+            position: relative;
+        }
+        
+        .example-text-wrapper {
+            margin-bottom: 1rem;
+        }
+        
+        .example-text-wrapper:last-child {
+            margin-bottom: 0;
+        }
+        
+        .example-text-wrapper-simple {
+            margin-bottom: 1rem;
+        }
+        
+        .example-text-wrapper-simple:last-child {
+            margin-bottom: 0;
         }
         
         .example-sentence {
@@ -858,6 +875,37 @@
         .example-translation {
             color: var(--text-secondary); font-size: 0.95rem; text-align: center;
             margin: 0; font-style: italic;
+        }
+        
+        .copy-example-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: all var(--transition-speed) ease;
+            opacity: 0.7;
+            backdrop-filter: blur(4px);
+            z-index: 5;
+        }
+        
+        .copy-example-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            color: var(--primary-color);
+            opacity: 1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .copy-example-btn svg {
+            width: 16px;
+            height: 16px;
         }
         
         .ik-btn-overlay {
@@ -1124,7 +1172,8 @@
         PREV: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>`,
         NEXT: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>`,
         LOOP: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>`,
-        RETRY: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`
+        RETRY: `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>`,
+        COPY: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`
     };
 
     // --- Virtual Scrolling System ---
@@ -1725,8 +1774,15 @@
                         <button data-action="play-audio" class="ik-btn-overlay" title="Play Audio" style="display: none;">${ICONS.PLAY}</button>
                     </div>
                     <div class="example-text-container">
-                        <p class="example-sentence"></p>
-                        <p class="example-translation"></p>
+                        <button class="copy-example-btn" data-action="copy-sentence" title="Copy Japanese sentence" aria-label="Copy Japanese sentence to clipboard">
+                            ${ICONS.COPY}
+                        </button>
+                        <div class="example-text-wrapper">
+                            <p class="example-sentence"></p>
+                        </div>
+                        <div class="example-text-wrapper-simple">
+                            <p class="example-translation"></p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1779,7 +1835,8 @@
                     'next-example': () => this.navigate(1),
                     'toggle-loop': () => this.toggleLoop(),
                     'play-all': () => this.handlePlayAll(),
-                    'retry': () => this.retryCurrentFetch()
+                    'retry': () => this.retryCurrentFetch(),
+                    'copy-sentence': () => this.copyExampleText('sentence')
                 };
                 actionMap[action]?.();
             });
@@ -1819,6 +1876,45 @@
             if (this.lastSearchWord) {
                 await this.fetchExamples(this.lastSearchWord);
             }
+        }
+
+        copyExampleText(type) {
+            if (this.examples.length === 0) return;
+            
+            const example = this.examples[this.currentIndex];
+            let textToCopy = '';
+            let copyType = '';
+            
+            if (type === 'sentence') {
+                textToCopy = example.sentence || '';
+                copyType = 'Japanese sentence';
+            } else if (type === 'translation') {
+                textToCopy = example.translation || '';
+                copyType = 'English translation';
+            }
+            
+            if (!textToCopy) {
+                console.warn(`No ${copyType} available to copy`);
+                return;
+            }
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Find the button that was clicked and show feedback
+                const button = this.container.querySelector(`[data-action="copy-${type}"]`);
+                if (button) {
+                    const originalTitle = button.title;
+                    button.title = 'Copied!';
+                    button.style.color = 'var(--success-color)';
+                    
+                    setTimeout(() => {
+                        button.title = originalTitle;
+                        button.style.color = '';
+                    }, 1500);
+                }
+                console.log(`✅ Copied ${copyType}: ${textToCopy}`);
+            }).catch(err => {
+                console.error('Failed to copy text:', err);
+            });
         }
 
         _updateContent() {
