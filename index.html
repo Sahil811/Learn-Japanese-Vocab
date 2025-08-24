@@ -243,34 +243,136 @@
             display: block;
         }
         
-        /* --- Word Search Styles --- */
-        .search-container {
-            margin-bottom: 1.5rem;
+        /* --- Floating Search Toggle Button --- */
+        #search-toggle-btn {
+            position: fixed;
+            top: calc(50% + 80px); /* Position below the auto-loop button */
+            right: 1.5rem;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 6px 16px rgba(156, 39, 176, 0.35);
+            transition: all var(--transition-speed) ease;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        
+        #search-toggle-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(156, 39, 176, 0.4);
+        }
+        
+        #search-toggle-btn:active {
+            transform: scale(1);
+            box-shadow: 0 4px 10px rgba(156, 39, 176, 0.3);
+        }
+        
+        #search-toggle-btn.active {
+            background: linear-gradient(135deg, #673ab7 0%, #512da8 100%);
+            box-shadow: 0 6px 16px rgba(103, 58, 183, 0.35);
+        }
+        
+        /* --- Search Overlay --- */
+        .search-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity var(--transition-speed) ease;
+        }
+        
+        .search-overlay.visible {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .search-modal {
             position: relative;
+            margin: auto;
+            width: 90%;
+            max-width: 600px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: translateY(-50px);
+            transition: transform var(--transition-speed) ease;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .search-overlay.visible .search-modal {
+            transform: translateY(0);
+        }
+        
+        .search-modal-header {
+            padding: 1.5rem 1.5rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        
+        .search-modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 0;
+        }
+        
+        .search-close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .search-close-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-color);
         }
         
         .search-input-wrapper {
             position: relative;
             display: flex;
             align-items: center;
-            background: var(--surface-color);
+            background: var(--bg-color);
             border: 2px solid var(--border-color);
-            border-radius: var(--border-radius-lg);
-            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius-md);
+            padding: 1rem 1.25rem;
+            margin: 1rem 1.5rem;
             transition: all var(--transition-speed) ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         
         .search-input-wrapper:focus-within {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1), 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
         }
         
         .search-icon {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             color: var(--text-secondary);
-            margin-right: 0.75rem;
+            margin-right: 1rem;
             flex-shrink: 0;
         }
         
@@ -278,7 +380,7 @@
             flex: 1;
             border: none;
             outline: none;
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: var(--text-color);
             background: transparent;
             font-family: 'Noto Sans JP', 'Roboto', sans-serif;
@@ -294,7 +396,7 @@
             border: none;
             color: var(--text-secondary);
             cursor: pointer;
-            padding: 0.25rem;
+            padding: 0.5rem;
             border-radius: 50%;
             display: none;
             transition: all var(--transition-speed) ease;
@@ -307,38 +409,31 @@
         }
         
         .search-clear-btn.visible {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         /* Search Results */
         .search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius-md);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-            max-height: 300px;
+            flex: 1;
             overflow-y: auto;
-            z-index: 1001;
-            display: none;
-            backdrop-filter: blur(10px);
+            min-height: 200px;
+            max-height: 400px;
         }
         
-        .search-results.visible {
-            display: block;
+        .search-results:not(:empty) {
+            border-top: 1px solid var(--border-color);
         }
         
         .search-result-item {
-            padding: 0.75rem 1rem;
+            padding: 1rem 1.5rem;
             cursor: pointer;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             transition: all var(--transition-speed) ease;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
         }
         
         .search-result-item:hover {
@@ -353,42 +448,71 @@
         .search-result-word {
             font-family: 'Noto Sans JP', sans-serif;
             font-weight: 500;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
         }
         
         .search-result-highlight {
             background: linear-gradient(135deg, var(--primary-color), var(--primary-variant));
             color: white;
-            padding: 0.1em 0.2em;
-            border-radius: 3px;
+            padding: 0.15em 0.3em;
+            border-radius: 4px;
             font-weight: 600;
         }
         
         .search-no-results {
-            padding: 2rem 1rem;
+            padding: 3rem 1.5rem;
             text-align: center;
             color: var(--text-secondary);
             font-style: italic;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
         }
         
         .search-loading {
-            padding: 1.5rem 1rem;
+            padding: 3rem 1.5rem;
             text-align: center;
             color: var(--text-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 1rem;
         }
         
         .search-loading::before {
             content: '';
-            width: 16px;
-            height: 16px;
+            width: 20px;
+            height: 20px;
             border: 2px solid var(--border-color);
             border-top: 2px solid var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .search-modal {
+                width: 95%;
+                margin: 1rem auto;
+            }
+            
+            .search-modal-header {
+                padding: 1rem;
+            }
+            
+            .search-input-wrapper {
+                margin: 0.5rem 1rem 1rem;
+                padding: 0.875rem 1rem;
+            }
+            
+            .search-result-item {
+                padding: 0.875rem 1rem;
+            }
+            
+            .search-result-word {
+                font-size: 1.1rem;
+            }
         }
 
         .content-grid {
@@ -1210,36 +1334,43 @@
             .example-sentence { font-size: 1.1rem; }
             .image-container { height: 200px; }
             .example-text-container { padding: 1rem; min-height: 140px; }
+            
+            /* Floating action buttons mobile positioning */
             #random-word-btn {
                 width: 54px;
                 height: 54px;
-                bottom: 1rem;
                 right: 1rem;
+                top: auto;
+                bottom: 1rem;
+                transform: none;
             }
             
-            /* Search responsive adjustments */
-            .search-container {
-                margin-bottom: 1rem;
+            #random-word-btn:hover {
+                transform: translateY(-3px) scale(1.05);
             }
             
-            .search-input-wrapper {
-                padding: 0.6rem 0.8rem;
+            #random-word-btn:active {
+                transform: scale(1);
             }
             
-            #word-search {
-                font-size: 0.9rem;
+            #random-word-btn:disabled {
+                transform: none;
             }
             
-            .search-results {
-                max-height: 250px;
+            #auto-loop-btn {
+                width: 54px;
+                height: 54px;
+                right: 1rem;
+                top: auto;
+                bottom: 5rem; /* Position above random word button */
             }
             
-            .search-result-item {
-                padding: 0.6rem 0.8rem;
-            }
-            
-            .search-result-word {
-                font-size: 1rem;
+            #search-toggle-btn {
+                width: 54px;
+                height: 54px;
+                right: 1rem;
+                top: auto;
+                bottom: 9rem; /* Position above auto-loop button */
             }
         }
     </style>
@@ -1253,30 +1384,6 @@
         <div class="content-grid" id="content-grid">
             <section id="word-info-section" class="content-section">
                 <div class="card word-info-card">
-                    <!-- Word Search -->
-                    <div class="search-container">
-                        <div class="search-input-wrapper">
-                            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                            </svg>
-                            <input 
-                                type="text" 
-                                id="word-search" 
-                                placeholder="Search words (partial search supported)..."
-                                autocomplete="off"
-                                spellcheck="false"
-                            >
-                            <button class="search-clear-btn" id="search-clear-btn" title="Clear search">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="search-results" id="search-results">
-                            <!-- Search results will be populated here -->
-                        </div>
-                    </div>
-                    
                     <div id="display-word">
                         <span class="word-main" role="status" aria-live="polite" tabindex="-1"></span>
                         <span class="word-reading"></span>
@@ -1300,6 +1407,13 @@
             </section>
         </div>
         
+        <!-- Search Toggle Button -->
+        <button id="search-toggle-btn" title="Search Words">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+        </button>
+        
         <!-- Auto-Loop Button -->
         <button id="auto-loop-btn" title="Auto-Loop Random Words (10 examples each)">
             <div class="spinner"></div>
@@ -1320,6 +1434,40 @@
                 <path d="M22 15.5c0 1.33-2 2.5-2 2.5s-2-1.17-2-2.5c0-1.1.9-2 2-2s2 .9 2 2zM7.5 2c-1.11 0-2 .89-2 2v1.03c.23-.02.46-.03.7-.03.88 0 1.7.23 2.43.64.59-.26 1.25-.41 1.94-.41 1.18 0 2.25.51 3 1.28.75-.77 1.82-1.28 3-1.28 1.38 0 2.5 1.12 2.5 2.5 0 .61-.22 1.16-.59 1.59.32.22.59.53.59.91 0 .69-.56 1.25-1.25 1.25H10.9c-.06-2.09-1.76-3.75-3.87-3.75-.24 0-.47.02-.7.06V4c0-.55-.45-1-1-1s-1 .45-1 1v.06c-.23.04-.46.06-.7.06-2.11 0-3.81 1.66-3.87 3.75H.25C.11 8.81 0 8.69 0 8.55c0-.38.27-.69.59-.91C.22 7.16 0 6.61 0 6c0-1.38 1.12-2.5 2.5-2.5 1.18 0 2.25.51 3 1.28C6.25 2.51 7.32 2 8.5 2c.35 0 .69.06 1 .16.59-.74 1.54-1.16 2.5-1.16s1.91.42 2.5 1.16c.31-.1.65-.16 1-.16 1.18 0 2.25.51 3 1.28C19.25 2.51 20.32 2 21.5 2c.35 0 .69.06 1 .16.59-.74 1.54-1.16 2.5-1.16s1.91.42 2.5 1.16c.31-.1.65-.16 1-.16.34 0 .67.04 1 .12V4c0-1.11-.89-2-2-2h-1.5zm-1.5 6c0 1.33-2 2.5-2 2.5s-2-1.17-2-2.5c0-1.1.9-2 2-2s2 .9 2 2zM4 15.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-2.5-2-2.5S4 14.17 4 15.5zM15 8c-1.1 0-2 .9-2 2c0 1.33-2 2.5-2 2.5S9 11.33 9 10c0-1.1-.9-2-2-2s-2 .9-2 2c0 1.33-2 2.5-2 2.5S1 11.33 1 10c0-1.1-.9-2-2-2s-2 .9-2 2c0 1.33-2 2.5-2 2.5V19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2v-6.5S20 11.33 20 10c0-1.1-.9-2-2-2s-2 .9-2 2z"></path>
             </svg>
         </button>
+        
+        <!-- Search Overlay -->
+        <div class="search-overlay" id="search-overlay">
+            <div class="search-modal">
+                <div class="search-modal-header">
+                    <h2 class="search-modal-title">Search Words</h2>
+                    <button class="search-close-btn" id="search-close-btn" title="Close search">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
+                    <input 
+                        type="text" 
+                        id="word-search" 
+                        placeholder="Search words (partial search supported)..."
+                        autocomplete="off"
+                        spellcheck="false"
+                    >
+                    <button class="search-clear-btn" id="search-clear-btn" title="Clear search">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="search-results" id="search-results">
+                    <!-- Search results will be populated here -->
+                </div>
+            </div>
+        </div>
         
         <!-- RTK Edit Modal -->
         <div class="rtk-edit-modal" id="rtk-edit-modal">
@@ -2937,9 +3085,13 @@
     // --- Word Search Manager Class ---
     class WordSearchManager {
         constructor() {
-            this.searchInput = searchInput;
-            this.searchResults = searchResults;
-            this.searchClearBtn = searchClearBtn;
+            this.searchOverlay = document.getElementById('search-overlay');
+            this.searchToggleBtn = document.getElementById('search-toggle-btn');
+            this.searchCloseBtn = document.getElementById('search-close-btn');
+            this.searchInput = document.getElementById('word-search');
+            this.searchResults = document.getElementById('search-results');
+            this.searchClearBtn = document.getElementById('search-clear-btn');
+            this.isOpen = false;
             this.isSearching = false;
             this.searchTimeout = null;
             
@@ -2947,6 +3099,25 @@
         }
         
         initEventListeners() {
+            // Search toggle button
+            this.searchToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleSearch();
+            });
+            
+            // Close button
+            this.searchCloseBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.closeSearch();
+            });
+            
+            // Overlay click to close
+            this.searchOverlay.addEventListener('click', (e) => {
+                if (e.target === this.searchOverlay) {
+                    this.closeSearch();
+                }
+            });
+            
             // Input event for real-time search
             this.searchInput.addEventListener('input', (e) => {
                 const query = e.target.value.trim();
@@ -2958,31 +3129,55 @@
                 this.clearSearch();
             });
             
-            // Focus and blur events
-            this.searchInput.addEventListener('focus', () => {
-                if (this.searchInput.value.trim()) {
-                    this.showResults();
-                }
-            });
-            
-            this.searchInput.addEventListener('blur', () => {
-                // Delay hiding results to allow clicking on them
-                setTimeout(() => {
-                    this.hideResults();
-                }, 150);
-            });
-            
-            // Keyboard navigation
+            // Keyboard navigation and shortcuts
             this.searchInput.addEventListener('keydown', (e) => {
                 this.handleKeydown(e);
             });
             
-            // Click outside to close
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.search-container')) {
-                    this.hideResults();
+            // Global keyboard shortcut (Ctrl/Cmd + F)
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'f' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.openSearch();
+                }
+                
+                if (e.key === 'Escape' && this.isOpen) {
+                    this.closeSearch();
                 }
             });
+        }
+        
+        toggleSearch() {
+            if (this.isOpen) {
+                this.closeSearch();
+            } else {
+                this.openSearch();
+            }
+        }
+        
+        openSearch() {
+            this.isOpen = true;
+            this.searchOverlay.classList.add('visible');
+            this.searchToggleBtn.classList.add('active');
+            
+            // Focus the search input after animation
+            setTimeout(() => {
+                this.searchInput.focus();
+            }, 100);
+            
+            // Show initial empty state if there's no query
+            if (!this.searchInput.value.trim()) {
+                this.showEmptyState();
+            }
+        }
+        
+        closeSearch() {
+            this.isOpen = false;
+            this.searchOverlay.classList.remove('visible');
+            this.searchToggleBtn.classList.remove('active');
+            
+            // Clear search when closing
+            this.clearSearch();
         }
         
         handleSearchInput(query) {
@@ -2990,7 +3185,7 @@
             this.searchClearBtn.classList.toggle('visible', query.length > 0);
             
             if (query.length === 0) {
-                this.hideResults();
+                this.showEmptyState();
                 return;
             }
             
@@ -3031,11 +3226,11 @@
                 }
                 
                 // Limit results to prevent performance issues
-                if (results.length >= 50) break;
+                if (results.length >= 100) break;
             }
             
             // Sort by relevance score (higher score = better match)
-            return results.sort((a, b) => b.score - a.score).slice(0, 20);
+            return results.sort((a, b) => b.score - a.score).slice(0, 30);
         }
         
         calculateScore(word, query) {
@@ -3074,7 +3269,6 @@
             });
             
             this.searchResults.innerHTML = html;
-            this.showResults();
             
             // Add click handlers to result items
             this.searchResults.querySelectorAll('.search-result-item').forEach(item => {
@@ -3091,13 +3285,11 @@
         }
         
         selectWord(word) {
-            // Clear search
-            this.searchInput.value = '';
-            this.searchClearBtn.classList.remove('visible');
-            this.hideResults();
-            
-            // Display the selected word
+            // Display the selected word immediately
             this.displaySelectedWord(word);
+            
+            // Close the search overlay
+            this.closeSearch();
         }
         
         displaySelectedWord(word) {
@@ -3126,37 +3318,45 @@
             });
         }
         
+        showEmptyState() {
+            this.searchResults.innerHTML = `
+                <div class="search-no-results">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="48" height="48" style="opacity: 0.3; margin-bottom: 1rem;">
+                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
+                    <div>Start typing to search for Japanese words...</div>
+                    <div style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Supports partial matching • ${WORD_LIST ? WORD_LIST.length.toLocaleString() : '0'} words available</div>
+                </div>
+            `;
+        }
+        
         showLoading() {
             this.searchResults.innerHTML = '<div class="search-loading">Searching...</div>';
-            this.showResults();
         }
         
         showNoResults(message) {
-            this.searchResults.innerHTML = `<div class="search-no-results">${message}</div>`;
-            this.showResults();
-        }
-        
-        showResults() {
-            this.searchResults.classList.add('visible');
-        }
-        
-        hideResults() {
-            this.searchResults.classList.remove('visible');
+            this.searchResults.innerHTML = `
+                <div class="search-no-results">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="48" height="48" style="opacity: 0.3; margin-bottom: 1rem;">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                    <div>${message}</div>
+                </div>
+            `;
         }
         
         clearSearch() {
             this.searchInput.value = '';
             this.searchClearBtn.classList.remove('visible');
-            this.hideResults();
-            this.searchInput.focus();
+            this.showEmptyState();
         }
         
         handleKeydown(e) {
             const items = this.searchResults.querySelectorAll('.search-result-item');
             if (items.length === 0) return;
             
-            const currentSelected = this.searchResults.querySelector('.search-result-item:hover');
-            let selectedIndex = Array.from(items).indexOf(currentSelected);
+            const currentSelected = this.searchResults.querySelector('.search-result-item[data-selected="true"]');
+            let selectedIndex = currentSelected ? Array.from(items).indexOf(currentSelected) : -1;
             
             switch (e.key) {
                 case 'ArrowDown':
@@ -3181,15 +3381,22 @@
                     }
                     break;
                 case 'Escape':
-                    this.hideResults();
-                    this.searchInput.blur();
+                    e.preventDefault();
+                    this.closeSearch();
                     break;
             }
         }
         
         highlightItem(items, index) {
-            items.forEach(item => item.style.backgroundColor = '');
+            // Remove previous selection
+            items.forEach(item => {
+                item.removeAttribute('data-selected');
+                item.style.backgroundColor = '';
+            });
+            
+            // Highlight new selection
             if (items[index]) {
+                items[index].setAttribute('data-selected', 'true');
                 items[index].style.backgroundColor = 'rgba(26, 115, 232, 0.1)';
                 items[index].scrollIntoView({ block: 'nearest' });
             }
