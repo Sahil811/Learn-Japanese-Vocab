@@ -1664,8 +1664,8 @@
     class ImmersionKitHandler {
         constructor() {
             this.examples = []; this.currentIndex = 0; this.isPlayingAll = false;
-            // Restore loop state from localStorage or default to false
-            this.isLoopingAudio = localStorage.getItem('jdojo_loop_state') === 'true';
+            // Restore loop state from localStorage using versioned key to prevent clearing
+            this.isLoopingAudio = localStorage.getItem(`jdojo_${CACHE_VERSION}_loop_state`) === 'true';
             this.lastSearchWord = null; this.container = null; this.elements = {};
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             this.currentAudioSource = null; this.analyserNode = null; this.visualizerAnimationId = null;
@@ -1737,6 +1737,11 @@
             // Restore the loop button visual state after elements are cached
             if (this.elements.loopBtn) {
                 this.elements.loopBtn.classList.toggle('is-active', this.isLoopingAudio);
+            }
+            // Ensure play-all button starts inactive
+            if (this.elements.playAllBtn) {
+                this.elements.playAllBtn.classList.remove('is-active');
+                this.elements.playAllBtn.innerHTML = ICONS.PLAY;
             }
         }
 
@@ -1835,6 +1840,10 @@
         async fetchExamples(word) {
             this.lastSearchWord = word;
             this.stopCurrentAudio();
+            // Reset play-all state when changing words (but preserve loop state)
+            if (this.isPlayingAll) {
+                this.handlePlayAll(false);
+            }
             // Don't reset loop state when fetching new examples
 
             try {
@@ -2191,8 +2200,8 @@
 
         toggleLoop(forceState) {
             this.isLoopingAudio = forceState !== undefined ? forceState : !this.isLoopingAudio;
-            // Save loop state to localStorage for persistence
-            localStorage.setItem('jdojo_loop_state', this.isLoopingAudio.toString());
+            // Save loop state to localStorage with versioned key for persistence
+            localStorage.setItem(`jdojo_${CACHE_VERSION}_loop_state`, this.isLoopingAudio.toString());
             if (this.isLoopingAudio) {
                 if (this.isPlayingAll) this.handlePlayAll(false);
                 this.audioLoop();
@@ -2212,7 +2221,10 @@
         handlePlayAll(forceState) {
             this.isPlayingAll = forceState !== undefined ? forceState : !this.isPlayingAll;
             if (this.isPlayingAll) {
-                this.toggleLoop(false);
+                // When starting play-all, turn off loop functionality and update button state
+                if (this.isLoopingAudio) {
+                    this.toggleLoop(false); // This will turn off loop and update UI
+                }
                 this.playAllSequence();
             } else {
                 this.stopCurrentAudio();
@@ -2234,6 +2246,7 @@
                 }
             }
             this.handlePlayAll(false);
+            // Loop state was explicitly turned off when play-all started, so don't resume it
         }
     }
     const immersionHandler = new ImmersionKitHandler();
