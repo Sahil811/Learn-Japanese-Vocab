@@ -138,6 +138,28 @@ app.get('/api/random-word', (req, res) => {
     });
 });
 
+// API endpoint to get a random word containing a specific kanji
+app.get('/api/random-word-with-kanji/:kanji', (req, res) => {
+    const kanjiChar = req.params.kanji;
+    
+    // Validate kanji character
+    if (!kanjiChar || kanjiChar.length !== 1) {
+        return res.status(400).json({ error: 'Valid single kanji character is required' });
+    }
+    
+    // Query to find words containing the specific kanji character
+    db.get('SELECT word FROM words WHERE word LIKE ? ORDER BY RANDOM() LIMIT 1', [`%${kanjiChar}%`], (err, row) => {
+        if (err) {
+            console.error('Error fetching random word with kanji:', err);
+            res.status(500).json({ error: 'Failed to fetch random word with kanji' });
+        } else if (row) {
+            res.json({ word: row.word, kanji: kanjiChar });
+        } else {
+            res.status(404).json({ error: `No words found containing kanji: ${kanjiChar}` });
+        }
+    });
+});
+
 // API endpoint to get kanji info for a specific kanji character
 app.get('/api/kanji/:kanji', (req, res) => {
     const kanjiChar = req.params.kanji;

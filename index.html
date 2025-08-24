@@ -855,6 +855,13 @@
             /* Performance optimization */
             will-change: transform;
             transform: translateZ(0); /* GPU acceleration */
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .kanji-char:hover {
+            transform: translateZ(0) scale(1.05);
+            background: linear-gradient(135deg, #dde7f8 0%, #c8daf5 100%);
         }
         
         .kanji-char::after {
@@ -867,30 +874,50 @@
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, transparent 100%);
         }
         
-        /* Kanji character link styles - inherit all parent styles */
-        .kanji-char-link {
-            color: inherit;
-            text-decoration: none;
+        /* Kanji character clickable span */
+        .kanji-char-clickable {
+            position: relative;
+            z-index: 2;
             display: grid;
             place-items: center;
             width: 100%;
             height: 100%;
-            position: relative;
-            z-index: 1;
+        }
+        
+        /* External link for Kanji Koohii */
+        .kanji-external-link {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 16px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            opacity: 0;
             transition: all var(--transition-speed) ease;
+            z-index: 3;
+            text-decoration: none;
+            color: var(--text-secondary);
         }
         
-        .kanji-char-link:hover {
-            color: var(--japan-red);
-            transform: translateZ(0) scale(1.05); /* GPU acceleration */
+        .kanji-char:hover .kanji-external-link {
+            opacity: 1;
+            transform: scale(1.1);
         }
         
-        .kanji-char-link:focus {
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
-            border-radius: var(--border-radius-sm);
+        .kanji-external-link:hover {
+            background: var(--primary-color);
+            color: white;
         }
         
+        .kanji-external-link svg {
+            width: 10px;
+            height: 10px;
+        }
+        
+
         .kanji-details { 
             flex-grow: 1; 
             position: relative;
@@ -1707,9 +1734,14 @@
             
             const processedRTK = processRTKText(kanjiData.rtk);
             div.innerHTML = `
-                <div class="kanji-char">
-                    <a href="https://kanji.koohii.com/study/kanji/${kanjiData.kanji}" target="_blank" class="kanji-char-link">
+                <div class="kanji-char" onclick="loadRandomWordWithKanji('${kanjiData.kanji}')" title="Click to find a random word containing this kanji">
+                    <span class="kanji-char-clickable">
                         ${kanjiData.kanji}
+                    </span>
+                    <a href="https://kanji.koohii.com/study/kanji/${kanjiData.kanji}" target="_blank" class="kanji-external-link" onclick="event.stopPropagation()" title="Study on Kanji Koohii">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                        </svg>
                     </a>
                 </div>
                 <div class="kanji-details">
@@ -1735,9 +1767,14 @@
                 const processedRTK = processRTKText(kanjiData.rtk);
                 html += `
                     <div class="kanji-card">
-                        <div class="kanji-char">
-                            <a href="https://kanji.koohii.com/study/kanji/${kanjiData.kanji}" target="_blank" class="kanji-char-link">
+                        <div class="kanji-char" onclick="loadRandomWordWithKanji('${kanjiData.kanji}')" title="Click to find a random word containing this kanji">
+                            <span class="kanji-char-clickable">
                                 ${kanjiData.kanji}
+                            </span>
+                            <a href="https://kanji.koohii.com/study/kanji/${kanjiData.kanji}" target="_blank" class="kanji-external-link" onclick="event.stopPropagation()" title="Study on Kanji Koohii">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                                </svg>
                             </a>
                         </div>
                         <div class="kanji-details">
@@ -2065,6 +2102,87 @@
                 resolve(true);
             });
         });
+    }
+
+    // Function to load a random word containing a specific kanji
+    async function loadRandomWordWithKanji(kanji) {
+        try {
+            console.log(`🎯 Loading random word containing kanji: ${kanji}`);
+            
+            // Show loading state similar to regular random word
+            randomWordBtn.classList.add('loading');
+            randomWordBtn.disabled = true;
+            
+            // Animate out old content
+            wordInfoSection.classList.remove('active');
+            immersionSection.classList.remove('active');
+            
+            // Fetch random word containing the kanji
+            const response = await fetch(`/api/random-word-with-kanji/${encodeURIComponent(kanji)}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            const word = data.word;
+            
+            if (!word) {
+                throw new Error('No word received from API');
+            }
+            
+            console.log(`✅ Found word containing ${kanji}: ${word}`);
+            
+            // 🚀 OPTIMIZATION: Show word immediately for instant feedback
+            document.querySelector('.word-main').textContent = word;
+            prepareWordForAnimation(word);
+            
+            // Show the word section immediately with basic content
+            document.querySelector('.word-reading').textContent = '';
+            document.getElementById('word-details').innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading word details...</p>';
+            kanjiBreakdownEl.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading kanji breakdown...</p>';
+            
+            // Show the UI immediately
+            setTimeout(() => {
+                wordInfoSection.classList.add('active');
+                immersionSection.classList.add('active');
+            }, 50);
+            
+            // Re-enable button immediately for better UX
+            randomWordBtn.classList.remove('loading');
+            randomWordBtn.disabled = false;
+            
+            // 🚀 OPTIMIZATION: Load API data in background (non-blocking)
+            Promise.allSettled([
+                fetchWordDetailsBackground(word),
+                immersionHandler.fetchExamplesBackground(word),
+                loadKanjiDataBackground(word)
+            ]).then(([wordResult, examplesResult, kanjiResult]) => {
+                // Update UI with loaded data as it becomes available
+                if (wordResult.status === 'fulfilled' && wordResult.value) {
+                    displayWordDetails(wordResult.value);
+                } else {
+                    displayWordDetails(null);
+                }
+            }).catch(error => {
+                console.warn('Background loading error:', error);
+            });
+            
+        } catch (error) {
+            console.error('❌ Error loading random word with kanji:', error);
+            
+            // Re-enable button on error
+            randomWordBtn.classList.remove('loading');
+            randomWordBtn.disabled = false;
+            
+            // Show error message
+            const errorMsg = error.message.includes('No words found') 
+                ? `No words found containing kanji: ${kanji}`
+                : 'Failed to load word. Please try again.';
+            
+            // You could add a toast notification here
+            alert(errorMsg);
+        }
     }
 
     // --- UI Update Functions ---
