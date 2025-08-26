@@ -4198,6 +4198,9 @@
         
         handlePlayAll(forceState) {
             this.isPlayingAll = forceState !== undefined ? forceState : !this.isPlayingAll;
+            
+            console.log('🔄 Play All toggled:', this.isPlayingAll ? 'Started' : 'Stopped');
+            
             if (this.isPlayingAll) {
                 // Stop auto-loop if active when user starts play-all
                 if (window.autoLoopManager && window.autoLoopManager.isActive) {
@@ -4209,33 +4212,61 @@
                 if (this.isLoopingAudio) {
                     this.toggleLoop(false); // This will turn off loop and update UI
                 }
+                
+                console.log('🔄 Starting infinite play-all sequence');
                 this.playAllSequence();
             } else {
+                console.log('🔄 Stopping play-all sequence');
                 this.stopCurrentAudio();
             }
+            
             this.elements.playAllBtn.innerHTML = this.isPlayingAll ? ICONS.STOP : ICONS.PLAY;
             this.elements.playAllBtn.classList.toggle('is-active', this.isPlayingAll);
         }
         
         async playAllSequence() {
-            if (this.examples.length === 0) { this.handlePlayAll(false); return; }
-            let initialIndex = this.currentIndex;
-            for (let i = 0; i < this.examples.length && this.isPlayingAll; i++) {
-                this.currentIndex = (initialIndex + i) % this.examples.length;
-                this._updateContent();
+            if (this.examples.length === 0) { 
+                console.log('🔄 Play All: No examples available, stopping');
+                this.handlePlayAll(false); 
+                return; 
+            }
+            
+            console.log(`🔄 Play All: Starting infinite loop with ${this.examples.length} examples`);
+            let cycleCount = 0;
+            
+            while (this.isPlayingAll) {
+                cycleCount++;
+                console.log(`🔄 Play All: Starting cycle ${cycleCount}`);
                 
-                // Update fullscreen content if fullscreen is active
-                if (this.fullscreenElements.modal && this.fullscreenElements.modal.classList.contains('active')) {
-                    this.updateFullscreenContent();
+                let initialIndex = this.currentIndex;
+                for (let i = 0; i < this.examples.length && this.isPlayingAll; i++) {
+                    this.currentIndex = (initialIndex + i) % this.examples.length;
+                    this._updateContent();
+                    
+                    // Update fullscreen content if fullscreen is active
+                    if (this.fullscreenElements.modal && this.fullscreenElements.modal.classList.contains('active')) {
+                        this.updateFullscreenContent();
+                    }
+                    
+                    const example = this.examples[this.currentIndex];
+                    if (example?.full_sound_url) {
+                        console.log(`🔄 Play All: Playing example ${i + 1}/${this.examples.length} (cycle ${cycleCount})`);
+                        await this.playAudio(example.full_sound_url);
+                        if (this.isPlayingAll) await new Promise(res => setTimeout(res, 400));
+                    }
                 }
                 
-                const example = this.examples[this.currentIndex];
-                if (example?.full_sound_url) {
-                    await this.playAudio(example.full_sound_url);
-                    if (this.isPlayingAll) await new Promise(res => setTimeout(res, 400));
+                // After finishing all examples, reset to beginning and continue if still playing
+                if (this.isPlayingAll) {
+                    console.log(`🔄 Play All: Completed cycle ${cycleCount}, restarting from beginning`);
+                    this.currentIndex = 0;
+                    // Small pause before restarting the loop
+                    await new Promise(res => setTimeout(res, 800));
                 }
             }
-            this.handlePlayAll(false);
+            
+            console.log(`🔄 Play All: Infinite loop stopped after ${cycleCount} cycles`);
+            // This will only be reached when isPlayingAll becomes false
             // Loop state was explicitly turned off when play-all started, so don't resume it
         }
     }
