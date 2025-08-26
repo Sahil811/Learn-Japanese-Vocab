@@ -1430,26 +1430,25 @@
             position: absolute;
             top: 1rem;
             left: 1rem;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.5);
             color: white;
-            width: 44px;
-            height: 44px;
-            border-radius: 8px;
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
             cursor: pointer;
             display: grid;
             place-items: center;
             transition: all 0.3s ease;
             z-index: 10001;
-            opacity: 0.8;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.1);
         }
         
         .fullscreen-toggle-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.45);
+            border-color: rgba(255, 255, 255, 0.7);
             transform: scale(1.05);
-            opacity: 1;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.2);
         }
         
         .fullscreen-toggle-btn::after {
@@ -1471,8 +1470,8 @@
         }
         
         .fullscreen-toggle-btn svg {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
         }
         
         /* Fullscreen Control Panel */
@@ -1549,9 +1548,46 @@
             border-color: rgba(34, 197, 94, 0.7);
         }
         
+        .fullscreen-control-btn.random-btn {
+            background: rgba(255, 149, 0, 0.3);
+            border-color: rgba(255, 149, 0, 0.5);
+        }
+        
+        .fullscreen-control-btn.random-btn:hover {
+            background: rgba(255, 149, 0, 0.4);
+            border-color: rgba(255, 149, 0, 0.7);
+        }
+        
+        .fullscreen-control-btn.auto-loop-btn {
+            background: rgba(255, 107, 107, 0.3);
+            border-color: rgba(255, 107, 107, 0.5);
+        }
+        
+        .fullscreen-control-btn.auto-loop-btn:hover {
+            background: rgba(255, 107, 107, 0.4);
+            border-color: rgba(255, 107, 107, 0.7);
+        }
+        
+        .fullscreen-control-btn.auto-loop-btn.active {
+            background: rgba(78, 205, 196, 0.6);
+            border-color: rgba(78, 205, 196, 0.8);
+        }
+        
+        .fullscreen-divider {
+            width: 1px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 0 0.25rem;
+        }
+        
         .fullscreen-control-btn svg {
             width: 18px;
             height: 18px;
+            transition: transform 0.2s ease;
+        }
+        
+        .fullscreen-control-btn:hover svg {
+            transform: scale(1.1);
         }
         
         /* Control tooltips */
@@ -2127,6 +2163,22 @@
                 <button class="fullscreen-control-btn" id="fullscreen-loop-btn" data-tooltip="Toggle Loop">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+                    </svg>
+                </button>
+                <div class="fullscreen-divider"></div>
+                <button class="fullscreen-control-btn random-btn" id="fullscreen-random-example-btn" data-tooltip="Random Example">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7.5 18c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5S8.33 18 7.5 18zm4.5-4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                    </svg>
+                </button>
+                <button class="fullscreen-control-btn random-btn" id="fullscreen-random-word-btn" data-tooltip="Random Word">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </button>
+                <button class="fullscreen-control-btn auto-loop-btn" id="fullscreen-auto-loop-btn" data-tooltip="Auto Loop Words">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
                     </svg>
                 </button>
             </div>
@@ -3111,7 +3163,10 @@
                 playBtn: document.getElementById('fullscreen-play-btn'),
                 playAllBtn: document.getElementById('fullscreen-play-all-btn'),
                 nextBtn: document.getElementById('fullscreen-next-btn'),
-                loopBtn: document.getElementById('fullscreen-loop-btn')
+                loopBtn: document.getElementById('fullscreen-loop-btn'),
+                randomExampleBtn: document.getElementById('fullscreen-random-example-btn'),
+                randomWordBtn: document.getElementById('fullscreen-random-word-btn'),
+                autoLoopBtn: document.getElementById('fullscreen-auto-loop-btn')
             };
             
             // Restore the loop button visual state after elements are cached
@@ -3171,36 +3226,62 @@
             
             // Fullscreen control buttons
             if (this.fullscreenElements.prevBtn) {
-                this.fullscreenElements.prevBtn.addEventListener('click', () => {
+                this.fullscreenElements.prevBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent fullscreen exit
                     this.navigate(-1);
                     setTimeout(() => this.updateFullscreenContent(), 100);
                 });
             }
             
             if (this.fullscreenElements.nextBtn) {
-                this.fullscreenElements.nextBtn.addEventListener('click', () => {
+                this.fullscreenElements.nextBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent fullscreen exit
                     this.navigate(1);
                     setTimeout(() => this.updateFullscreenContent(), 100);
                 });
             }
             
             if (this.fullscreenElements.playBtn) {
-                this.fullscreenElements.playBtn.addEventListener('click', () => {
+                this.fullscreenElements.playBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent fullscreen exit
                     this.playCurrentAudio();
                 });
             }
             
             if (this.fullscreenElements.playAllBtn) {
-                this.fullscreenElements.playAllBtn.addEventListener('click', () => {
+                this.fullscreenElements.playAllBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent fullscreen exit
                     this.handlePlayAll();
                     this.updateFullscreenPlayAllState();
                 });
             }
             
             if (this.fullscreenElements.loopBtn) {
-                this.fullscreenElements.loopBtn.addEventListener('click', () => {
+                this.fullscreenElements.loopBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent fullscreen exit
                     this.toggleLoop();
                     this.updateFullscreenLoopState();
+                });
+            }
+            
+            if (this.fullscreenElements.randomExampleBtn) {
+                this.fullscreenElements.randomExampleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent fullscreen exit
+                    this.randomExample();
+                });
+            }
+            
+            if (this.fullscreenElements.randomWordBtn) {
+                this.fullscreenElements.randomWordBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent fullscreen exit
+                    this.loadRandomWordInFullscreen();
+                });
+            }
+            
+            if (this.fullscreenElements.autoLoopBtn) {
+                this.fullscreenElements.autoLoopBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent fullscreen exit
+                    this.toggleAutoLoopInFullscreen();
                 });
             }
             
@@ -3323,7 +3404,8 @@
             const example = this.examples[this.currentIndex];
 
             this.elements.audioBtn.style.display = example.full_sound_url ? 'grid' : 'none';
-            this.elements.fullscreenToggleBtn.style.display = example.full_image_url ? 'grid' : 'none';
+            // Always show fullscreen toggle when examples are available
+            this.elements.fullscreenToggleBtn.style.display = 'grid';
             this.elements.skeleton.style.display = 'block';
             this.elements.image.style.display = 'none';
             
@@ -3340,10 +3422,15 @@
             if (!this.examples || this.examples.length === 0) return;
             
             const currentExample = this.examples[this.currentIndex];
-            if (!currentExample || !currentExample.full_image_url) return;
+            if (!currentExample) return;
             
-            // Update fullscreen image
-            this.fullscreenElements.image.src = currentExample.full_image_url;
+            // Update fullscreen image - use placeholder if no image available
+            if (currentExample.full_image_url) {
+                this.fullscreenElements.image.src = currentExample.full_image_url;
+            } else {
+                // Use a placeholder image
+                this.fullscreenElements.image.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZjVmNWY1Ii8+Cjx0ZXh0IHg9IjQwMCIgeT0iMzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCBTZWdvZSBVSSwgUm9ib3RvLCBPeHlnZW4sIFVidW50dSwgQ2FudGFyZWxsLCBvcGVuIHNhbnMsIGhlbHZldGljYSBuZXVlLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmaWxsPSIjOTk5Ij5ObyBJbWFnZSBBdmFpbGFibGU8L3RleHQ+Cjwvc3ZnPgo=';
+            }
             
             // Get current word information
             const wordMain = document.querySelector('.word-main')?.textContent || '';
@@ -3380,6 +3467,7 @@
             this.updateFullscreenCounter();
             this.updateFullscreenLoopState();
             this.updateFullscreenPlayAllState();
+            this.updateFullscreenAutoLoopState();
             
             // Show cursor initially
             this.fullscreenElements.modal.classList.add('show-cursor');
@@ -3409,6 +3497,21 @@
         updateFullscreenPlayAllState() {
             if (this.fullscreenElements.playAllBtn) {
                 this.fullscreenElements.playAllBtn.classList.toggle('active', this.isPlayingAll);
+            }
+        }
+        
+        toggleAutoLoopInFullscreen() {
+            if (window.autoLoopManager) {
+                window.autoLoopManager.toggle();
+                this.updateFullscreenAutoLoopState();
+                // Also sync the main auto-loop button state
+                window.autoLoopManager.updateButtonState();
+            }
+        }
+        
+        updateFullscreenAutoLoopState() {
+            if (this.fullscreenElements.autoLoopBtn && window.autoLoopManager) {
+                this.fullscreenElements.autoLoopBtn.classList.toggle('active', window.autoLoopManager.isActive);
             }
         }
         
@@ -3457,6 +3560,102 @@
             this.fullscreenElements.kanjiContainer.innerHTML = kanjiHTML;
         }
         
+        randomExample() {
+            if (this.examples.length < 2) {
+                console.log('🎲 Random example: Not enough examples (need at least 2)');
+                return;
+            }
+            
+            console.log('🎲 Random example: Starting random selection from', this.examples.length, 'examples');
+            
+            // Stop any current audio
+            this.stopCurrentAudio();
+            
+            // Generate random index different from current
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * this.examples.length);
+            } while (randomIndex === this.currentIndex && this.examples.length > 1);
+            
+            console.log('🎲 Random example: Selected index', randomIndex, 'from current', this.currentIndex);
+            
+            this.currentIndex = randomIndex;
+            this._updateContent();
+            
+            // Update fullscreen content if active
+            if (this.fullscreenElements.modal && this.fullscreenElements.modal.classList.contains('active')) {
+                console.log('🎲 Random example: Updating fullscreen content');
+                this.updateFullscreenContent();
+            }
+            
+            // Play audio after a short delay
+            setTimeout(() => {
+                const audioUrl = this.examples[this.currentIndex]?.full_sound_url;
+                console.log('🎲 Random example: Playing audio', audioUrl ? 'available' : 'not available');
+                this.playAudio(audioUrl);
+            }, 100);
+        }
+        
+        async loadRandomWordInFullscreen() {
+            if (WORD_LIST.length === 0) return;
+            
+            try {
+                // Show loading state on main random word button
+                randomWordBtn.classList.add('loading');
+                randomWordBtn.disabled = true;
+                
+                // Get random word
+                const word = WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+                
+                // Update the main interface immediately
+                document.querySelector('.word-main').textContent = word;
+                prepareWordForAnimation(word);
+                
+                // Update word details with loading state
+                document.querySelector('.word-reading').textContent = '';
+                document.getElementById('word-details').innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading word details...</p>';
+                kanjiBreakdownEl.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading kanji breakdown...</p>';
+                
+                // Show the UI sections
+                setTimeout(() => {
+                    wordInfoSection.classList.add('active');
+                    immersionSection.classList.add('active');
+                }, 50);
+                
+                // Re-enable button
+                randomWordBtn.classList.remove('loading');
+                randomWordBtn.disabled = false;
+                
+                // Load data in background and update fullscreen
+                Promise.allSettled([
+                    fetchWordDetailsBackground(word),
+                    this.fetchExamplesBackground(word),
+                    loadKanjiDataBackground(word)
+                ]).then(([wordResult, examplesResult, kanjiResult]) => {
+                    // Update UI with loaded data
+                    if (wordResult.status === 'fulfilled' && wordResult.value) {
+                        displayWordDetails(wordResult.value);
+                    } else {
+                        displayWordDetails(null);
+                    }
+                    
+                    // Update fullscreen content with new word data
+                    if (this.fullscreenElements.modal && this.fullscreenElements.modal.classList.contains('active')) {
+                        setTimeout(() => {
+                            this.updateFullscreenContent();
+                        }, 200);
+                    }
+                }).catch(error => {
+                    console.warn('Background loading error:', error);
+                });
+                
+            } catch (error) {
+                console.error('Error loading random word in fullscreen:', error);
+                randomWordBtn.classList.remove('loading');
+                randomWordBtn.disabled = false;
+            }
+        }
+        
         closeFullscreen() {
             if (this.fullscreenElements.modal) {
                 this.fullscreenElements.modal.classList.remove('active');
@@ -3469,13 +3668,18 @@
             if (!this.examples || this.examples.length === 0) return;
             
             const currentExample = this.examples[this.currentIndex];
-            if (!currentExample || !currentExample.full_image_url) {
+            if (!currentExample) {
                 this.closeFullscreen();
                 return;
             }
             
-            // Update image
-            this.fullscreenElements.image.src = currentExample.full_image_url;
+            // Update image - use placeholder if no image available
+            if (currentExample.full_image_url) {
+                this.fullscreenElements.image.src = currentExample.full_image_url;
+            } else {
+                // Use a placeholder image or hide the image while keeping fullscreen active
+                this.fullscreenElements.image.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZjVmNWY1Ii8+Cjx0ZXh0IHg9IjQwMCIgeT0iMzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCBTZWdvZSBVSSwgUm9ib3RvLCBPeHlnZW4sIFVidW50dSwgQ2FudGFyZWxsLCBvcGVuIHNhbnMsIGhlbHZldGljYSBuZXVlLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmaWxsPSIjOTk5Ij5ObyBJbWFnZSBBdmFpbGFibGU8L3RleHQ+Cjwvc3ZnPgo=';
+            }
             
             // Get current word information
             const wordMain = document.querySelector('.word-main')?.textContent || '';
@@ -3505,6 +3709,7 @@
             this.updateFullscreenCounter();
             this.updateFullscreenLoopState();
             this.updateFullscreenPlayAllState();
+            this.updateFullscreenAutoLoopState();
         }
 
         navigate(direction) {
@@ -3520,6 +3725,12 @@
             // Don't reset loop state when navigating
             this.currentIndex = (this.currentIndex + direction + this.examples.length) % this.examples.length;
             this._updateContent();
+            
+            // Update fullscreen content if active
+            if (this.fullscreenElements.modal && this.fullscreenElements.modal.classList.contains('active')) {
+                this.updateFullscreenContent();
+            }
+            
             setTimeout(() => {
                 this.playAudio(this.examples[this.currentIndex]?.full_sound_url);
                 // If loop is enabled, start looping on the new example
@@ -3630,6 +3841,13 @@
                     this._setUIState('content');
                     this._updateContent();
                     
+                    // Update fullscreen content if active (important for auto-loop)
+                    if (this.fullscreenElements.modal && this.fullscreenElements.modal.classList.contains('active')) {
+                        setTimeout(() => {
+                            this.updateFullscreenContent();
+                        }, 100);
+                    }
+                    
                     // Start audio if appropriate
                     setTimeout(() => {
                         if (this.examples[0]?.full_sound_url) {
@@ -3656,8 +3874,11 @@
             if (this.currentImageBlobUrl) URL.revokeObjectURL(this.currentImageBlobUrl);
 
             if (!url) {
+                // Show placeholder image instead of hiding
                 this.elements.skeleton.style.display = 'none';
-                this.elements.image.style.display = 'none';
+                this.elements.image.style.display = 'block';
+                this.elements.image.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDgwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZjVmNWY1Ii8+Cjx0ZXh0IHg9IjQwMCIgeT0iMzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCBTZWdvZSBVSSwgUm9ib3RvLCBPeHlnZW4sIFVidW50dSwgQ2FudGFyZWxsLCBvcGVuIHNhbnMsIGhlbHZldGljYSBuZXVlLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmaWxsPSIjOTk5Ij5ObyBJbWFnZSBBdmFpbGFibGU8L3RleHQ+Cjwvc3ZnPgo=';
+                this.elements.image.classList.remove('loading');
                 return;
             }
 
@@ -4124,12 +4345,26 @@
                 } else {
                     displayWordDetails(null);
                 }
+                
+                // Update fullscreen content if active after word details are loaded
+                if (this.immersionHandler.fullscreenElements.modal && 
+                    this.immersionHandler.fullscreenElements.modal.classList.contains('active')) {
+                    setTimeout(() => {
+                        this.immersionHandler.updateFullscreenContent();
+                    }, 100);
+                }
             }).catch(error => {
                 console.warn('AutoLoopManager background loading error:', error);
             });
             
             // Wait for examples to load
             await this.immersionHandler.fetchExamplesBackground(randomWord);
+            
+            // Update fullscreen content after examples are loaded
+            if (this.immersionHandler.fullscreenElements.modal && 
+                this.immersionHandler.fullscreenElements.modal.classList.contains('active')) {
+                this.immersionHandler.updateFullscreenContent();
+            }
             
             // Wait a bit for UI to update
             setTimeout(() => {
@@ -4140,11 +4375,14 @@
         async playExamples() {
             if (!this.isActive || this.immersionHandler.examples.length === 0) {
                 if (this.isActive) {
+                    console.log('AutoLoopManager: No examples found, moving to next word');
                     // If no examples, move to next word immediately
                     setTimeout(() => this.nextWord(), 1000);
                 }
                 return;
             }
+            
+            console.log(`AutoLoopManager: Playing ${this.immersionHandler.examples.length} examples`);
             
             const examples = this.immersionHandler.examples;
             const totalExamples = examples.length;
@@ -4154,10 +4392,21 @@
                 const exampleIndex = this.exampleCount % totalExamples;
                 const example = examples[exampleIndex];
                 
+                console.log(`AutoLoopManager: Playing example ${this.exampleCount + 1}/${this.maxExamplesPerWord}, index ${exampleIndex}`);
+                
                 if (example?.full_sound_url) {
                     // Update the immersion handler's current index
                     this.immersionHandler.currentIndex = exampleIndex;
                     this.immersionHandler._updateContent();
+                    
+                    // Update fullscreen content if active
+                    const isFullscreen = this.immersionHandler.fullscreenElements.modal && 
+                        this.immersionHandler.fullscreenElements.modal.classList.contains('active');
+                    
+                    if (isFullscreen) {
+                        console.log('AutoLoopManager: Updating fullscreen content for example', exampleIndex);
+                        this.immersionHandler.updateFullscreenContent();
+                    }
                     
                     // Play the audio
                     await this.immersionHandler.playAudio(example.full_sound_url);
@@ -4166,10 +4415,14 @@
                     if (this.isActive) {
                         await new Promise(resolve => setTimeout(resolve, 800));
                     }
+                } else {
+                    console.log('AutoLoopManager: No audio available for example', exampleIndex);
                 }
                 
                 this.exampleCount++;
             }
+            
+            console.log(`AutoLoopManager: Finished playing examples for word ${this.currentWordIndex}, moving to next word`);
             
             // Move to next word after playing 10 examples
             if (this.isActive) {
