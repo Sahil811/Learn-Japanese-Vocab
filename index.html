@@ -1356,6 +1356,89 @@
             margin: 0;
         }
         
+        /* Kanji overlay - right side */
+        .fullscreen-kanji-overlay {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 350px;
+            max-height: 70vh;
+            overflow-y: auto;
+            z-index: 10000;
+        }
+        
+        .fullscreen-kanji-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            margin: 0 0 1rem 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            text-align: center;
+        }
+        
+        .fullscreen-kanji-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .fullscreen-kanji-card {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .fullscreen-kanji-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .fullscreen-kanji-char {
+            display: grid;
+            place-items: center;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 6px;
+            color: #1c1c1c;
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'Noto Sans JP', sans-serif;
+            margin-right: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+        }
+        
+        .fullscreen-kanji-details {
+            flex: 1;
+        }
+        
+        .fullscreen-kanji-meaning {
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            margin: 0 0 0.25rem 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+        
+        .fullscreen-kanji-rtk {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+            line-height: 1.3;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+        
         .fullscreen-toggle-btn {
             position: absolute;
             top: 1rem;
@@ -1523,7 +1606,8 @@
         /* Auto-hide controls */
         .fullscreen-modal.show-cursor .fullscreen-controls,
         .fullscreen-modal.show-cursor .fullscreen-close-btn,
-        .fullscreen-modal.show-cursor .fullscreen-word-overlay {
+        .fullscreen-modal.show-cursor .fullscreen-word-overlay,
+        .fullscreen-modal.show-cursor .fullscreen-kanji-overlay {
             opacity: 1;
         }
         
@@ -1573,6 +1657,21 @@
         
         .fullscreen-modal.active .fullscreen-close-btn {
             animation: fadeInFullscreen 0.5s ease 0.1s both;
+        }
+        
+        .fullscreen-modal.active .fullscreen-kanji-overlay {
+            animation: slideInFromRight 0.6s ease 0.4s both;
+        }
+        
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
         
         /* Mobile responsive */
@@ -1641,6 +1740,30 @@
                 font-size: 0.75rem;
                 padding: 0.4rem 0.8rem;
                 min-width: 60px;
+            }
+            
+            .fullscreen-kanji-overlay {
+                top: 1rem;
+                right: 1rem;
+                left: 1rem;
+                max-width: none;
+                max-height: 40vh;
+                padding: 1rem;
+            }
+            
+            .fullscreen-kanji-char {
+                width: 45px;
+                height: 45px;
+                font-size: 1.5rem;
+                margin-right: 0.75rem;
+            }
+            
+            .fullscreen-kanji-meaning {
+                font-size: 0.9rem;
+            }
+            
+            .fullscreen-kanji-rtk {
+                font-size: 0.8rem;
             }
         }
 
@@ -1984,6 +2107,14 @@
             <div class="fullscreen-subtitle-overlay" id="fullscreen-subtitle-overlay">
                 <div class="fullscreen-example-sentence" id="fullscreen-example-sentence"></div>
                 <div class="fullscreen-example-translation" id="fullscreen-example-translation"></div>
+            </div>
+            
+            <!-- Kanji breakdown overlay - right side -->
+            <div class="fullscreen-kanji-overlay" id="fullscreen-kanji-overlay">
+                <h4 class="fullscreen-kanji-title">Kanji Breakdown</h4>
+                <div class="fullscreen-kanji-container" id="fullscreen-kanji-container">
+                    <!-- Kanji cards will be inserted here -->
+                </div>
             </div>
             
             <!-- Control panel - bottom right -->
@@ -2666,6 +2797,92 @@
             alert(errorMsg);
         }
     }
+    
+    // Function to load a random word containing a specific kanji while staying in fullscreen
+    async function loadRandomWordWithKanjiInFullscreen(kanji) {
+        try {
+            console.log(`🎯 Loading random word containing kanji in fullscreen: ${kanji}`);
+            
+            // Show loading state on random word button
+            randomWordBtn.classList.add('loading');
+            randomWordBtn.disabled = true;
+            
+            // Don't close fullscreen - keep it active
+            
+            // Fetch random word containing the kanji
+            const response = await fetch(`/api/random-word-with-kanji/${encodeURIComponent(kanji)}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            const word = data.word;
+            
+            if (!word) {
+                throw new Error('No word received from API');
+            }
+            
+            console.log(`✅ Found word containing ${kanji}: ${word}`);
+            
+            // Update the main interface word display
+            document.querySelector('.word-main').textContent = word;
+            prepareWordForAnimation(word);
+            
+            // Update word details immediately with loading state
+            document.querySelector('.word-reading').textContent = '';
+            document.getElementById('word-details').innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading word details...</p>';
+            kanjiBreakdownEl.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading kanji breakdown...</p>';
+            
+            // Show the UI sections
+            setTimeout(() => {
+                wordInfoSection.classList.add('active');
+                immersionSection.classList.add('active');
+            }, 50);
+            
+            // Re-enable button immediately for better UX
+            randomWordBtn.classList.remove('loading');
+            randomWordBtn.disabled = false;
+            
+            // Load API data in background and update fullscreen content
+            Promise.allSettled([
+                fetchWordDetailsBackground(word),
+                immersionHandler.fetchExamplesBackground(word),
+                loadKanjiDataBackground(word)
+            ]).then(([wordResult, examplesResult, kanjiResult]) => {
+                // Update UI with loaded data
+                if (wordResult.status === 'fulfilled' && wordResult.value) {
+                    displayWordDetails(wordResult.value);
+                } else {
+                    displayWordDetails(null);
+                }
+                
+                // Update fullscreen content with new word data
+                if (immersionHandler && immersionHandler.fullscreenElements.modal && 
+                    immersionHandler.fullscreenElements.modal.classList.contains('active')) {
+                    setTimeout(() => {
+                        immersionHandler.updateFullscreenContent();
+                    }, 100);
+                }
+            }).catch(error => {
+                console.warn('Background loading error:', error);
+            });
+            
+        } catch (error) {
+            console.error('❌ Error loading random word with kanji in fullscreen:', error);
+            
+            // Re-enable button on error
+            randomWordBtn.classList.remove('loading');
+            randomWordBtn.disabled = false;
+            
+            // Show error message
+            const errorMsg = error.message.includes('No words found') 
+                ? `No words found containing kanji: ${kanji}`
+                : 'Failed to load word. Please try again.';
+            
+            alert(errorMsg);
+        }
+    }
 
     // --- UI Update Functions ---
     function displayWordDetails(wordData) {
@@ -2904,6 +3121,8 @@
                 exampleTranslation: document.getElementById('fullscreen-example-translation'),
                 wordOverlay: document.getElementById('fullscreen-word-overlay'),
                 subtitleOverlay: document.getElementById('fullscreen-subtitle-overlay'),
+                kanjiOverlay: document.getElementById('fullscreen-kanji-overlay'),
+                kanjiContainer: document.getElementById('fullscreen-kanji-container'),
                 controls: document.getElementById('fullscreen-controls'),
                 counter: document.getElementById('fullscreen-counter'),
                 prevBtn: document.getElementById('fullscreen-prev-btn'),
@@ -3168,6 +3387,9 @@
             this.fullscreenElements.wordOverlay.style.display = hasWordInfo ? 'block' : 'none';
             this.fullscreenElements.subtitleOverlay.style.display = hasSubtitles ? 'block' : 'none';
             
+            // Update kanji content
+            this.updateFullscreenKanjiContent();
+            
             // Show fullscreen modal
             this.fullscreenElements.modal.classList.add('active');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
@@ -3206,6 +3428,53 @@
             if (this.fullscreenElements.playAllBtn) {
                 this.fullscreenElements.playAllBtn.classList.toggle('active', this.isPlayingAll);
             }
+        }
+        
+        updateFullscreenKanjiContent() {
+            if (!this.fullscreenElements.kanjiOverlay || !this.fullscreenElements.kanjiContainer) return;
+            
+            // Get the current word
+            const wordMain = document.querySelector('.word-main')?.textContent || '';
+            if (!wordMain) {
+                this.fullscreenElements.kanjiOverlay.style.display = 'none';
+                return;
+            }
+            
+            // Extract unique kanji from the word
+            const uniqueKanji = [...new Set(wordMain.match(/[\u4e00-\u9faf]/g) || [])];
+            
+            if (uniqueKanji.length === 0) {
+                this.fullscreenElements.kanjiOverlay.style.display = 'none';
+                return;
+            }
+            
+            // Get kanji data
+            const kanjiDataList = uniqueKanji.map(kanji => kanjiMap.get(kanji)).filter(Boolean);
+            
+            if (kanjiDataList.length === 0) {
+                this.fullscreenElements.kanjiOverlay.style.display = 'none';
+                return;
+            }
+            
+            // Show kanji overlay
+            this.fullscreenElements.kanjiOverlay.style.display = 'block';
+            
+            // Generate kanji cards HTML
+            let kanjiHTML = '';
+            kanjiDataList.forEach(kanjiData => {
+                const processedRTK = processRTKText(kanjiData.rtk);
+                kanjiHTML += `
+                    <div class="fullscreen-kanji-card" onclick="loadRandomWordWithKanjiInFullscreen('${kanjiData.kanji}')" title="Click to find a random word containing this kanji">
+                        <div class="fullscreen-kanji-char">${kanjiData.kanji}</div>
+                        <div class="fullscreen-kanji-details">
+                            <div class="fullscreen-kanji-meaning">${kanjiData.meaning}</div>
+                            <div class="fullscreen-kanji-rtk">${processedRTK}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            this.fullscreenElements.kanjiContainer.innerHTML = kanjiHTML;
         }
         
         closeFullscreen() {
@@ -3248,6 +3517,9 @@
             
             this.fullscreenElements.wordOverlay.style.display = hasWordInfo ? 'block' : 'none';
             this.fullscreenElements.subtitleOverlay.style.display = hasSubtitles ? 'block' : 'none';
+            
+            // Update kanji content
+            this.updateFullscreenKanjiContent();
             
             // Update controls
             this.updateFullscreenCounter();
