@@ -1220,6 +1220,430 @@
         .audio-visualizer-container.is-playing { opacity: 1; }
         #audio-visualizer { width: 100%; height: 100%; }
 
+        /* --- Fullscreen Image Modal Styles --- */
+        .fullscreen-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            display: none;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+            cursor: none;
+        }
+        
+        .fullscreen-modal.show-cursor {
+            cursor: default;
+        }
+        
+        .fullscreen-modal.active {
+            display: block;
+        }
+        
+        .fullscreen-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fullscreen-image {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .fullscreen-close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            width: 48px;
+            height: 48px;
+            color: white;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: all 0.3s ease;
+            z-index: 10001;
+        }
+        
+        .fullscreen-close-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+        
+        .fullscreen-close-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+        
+        /* Word overlay - top left like video subtitles */
+        .fullscreen-word-overlay {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 1.5rem 2rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 400px;
+            z-index: 10000;
+        }
+        
+        .fullscreen-word-main {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            font-family: 'Noto Sans JP', sans-serif;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+        
+        .fullscreen-word-reading {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: 'Noto Sans JP', sans-serif;
+            margin-bottom: 0.75rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+        
+        .fullscreen-word-meaning {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            line-height: 1.4;
+        }
+        
+        /* Subtitle overlay - bottom center like video subtitles */
+        .fullscreen-subtitle-overlay {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            max-width: 90vw;
+            z-index: 10000;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 1.5rem 2rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .fullscreen-example-sentence {
+            font-size: 1.8rem;
+            font-family: 'Noto Sans JP', sans-serif;
+            color: white;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+        }
+        
+        .fullscreen-example-translation {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.85);
+            font-style: italic;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            margin: 0;
+        }
+        
+        .fullscreen-toggle-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: all 0.3s ease;
+            z-index: 10001;
+            opacity: 0.8;
+        }
+        
+        .fullscreen-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+            opacity: 1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .fullscreen-toggle-btn::after {
+            content: 'F';
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .fullscreen-toggle-btn:hover::after {
+            opacity: 1;
+        }
+        
+        .fullscreen-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Fullscreen Control Panel */
+        .fullscreen-controls {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 2rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 0.75rem 1rem;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 10000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        
+        .fullscreen-modal.active .fullscreen-controls {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .nav-group {
+            display: flex;
+            gap: 0.25rem;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.25rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .fullscreen-control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .fullscreen-control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .fullscreen-control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .fullscreen-control-btn.active {
+            background: rgba(26, 115, 232, 0.8);
+            border-color: rgba(26, 115, 232, 1);
+            color: white;
+        }
+        
+        .fullscreen-control-btn.play-btn {
+            background: rgba(34, 197, 94, 0.3);
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+        
+        .fullscreen-control-btn.play-btn:hover {
+            background: rgba(34, 197, 94, 0.4);
+            border-color: rgba(34, 197, 94, 0.7);
+        }
+        
+        .fullscreen-control-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Control tooltips */
+        .fullscreen-control-btn::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10001;
+        }
+        
+        .fullscreen-control-btn:hover::after {
+            opacity: 1;
+        }
+        
+        /* Counter display in fullscreen */
+        .fullscreen-counter {
+            background: rgba(0, 0, 0, 0.6);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        /* Auto-hide controls */
+        .fullscreen-modal.show-cursor .fullscreen-controls,
+        .fullscreen-modal.show-cursor .fullscreen-close-btn,
+        .fullscreen-modal.show-cursor .fullscreen-word-overlay {
+            opacity: 1;
+        }
+        
+        /* Animation for overlay elements */
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInFromBottom {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+        
+        @keyframes fadeInFullscreen {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        .fullscreen-modal.active .fullscreen-image {
+            animation: fadeInFullscreen 0.4s ease;
+        }
+        
+        .fullscreen-modal.active .fullscreen-word-overlay {
+            animation: slideInFromTop 0.6s ease 0.2s both;
+        }
+        
+        .fullscreen-modal.active .fullscreen-subtitle-overlay {
+            animation: slideInFromBottom 0.6s ease 0.3s both;
+        }
+        
+        .fullscreen-modal.active .fullscreen-close-btn {
+            animation: fadeInFullscreen 0.5s ease 0.1s both;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .fullscreen-word-overlay {
+                top: 1rem;
+                left: 1rem;
+                right: 1rem;
+                max-width: none;
+                padding: 1rem 1.5rem;
+            }
+            
+            .fullscreen-word-main {
+                font-size: 2rem;
+            }
+            
+            .fullscreen-subtitle-overlay {
+                bottom: 2rem;
+                max-width: 95vw;
+                padding: 1rem 1.5rem;
+            }
+            
+            .fullscreen-example-sentence {
+                font-size: 1.4rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .fullscreen-example-translation {
+                font-size: 1rem;
+            }
+            
+            .fullscreen-close-btn {
+                top: 1rem;
+                right: 1rem;
+                width: 48px;
+                height: 48px;
+            }
+            
+            .fullscreen-controls {
+                bottom: 1rem;
+                right: 1rem;
+                left: 1rem;
+                justify-content: center;
+                padding: 0.5rem 0.75rem;
+                border-radius: 20px;
+                gap: 0.5rem;
+            }
+            
+            .nav-group {
+                gap: 0.2rem;
+                padding: 0.2rem;
+                border-radius: 16px;
+            }
+            
+            .fullscreen-control-btn {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .fullscreen-control-btn svg {
+                width: 16px;
+                height: 16px;
+            }
+            
+            .fullscreen-counter {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.8rem;
+                min-width: 60px;
+            }
+        }
+
         .example-text-container {
             padding: 1.25rem; flex: 1; display: flex; flex-direction: column;
             justify-content: center; min-height: 150px;
@@ -1534,6 +1958,64 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fullscreen Image Modal -->
+    <div class="fullscreen-modal" id="fullscreen-modal">
+        <div class="fullscreen-content">
+            <button class="fullscreen-close-btn" id="fullscreen-close-btn" title="Exit Fullscreen">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+            </button>
+            
+            <img class="fullscreen-image" id="fullscreen-image" alt="Fullscreen Example">
+            
+            <!-- Word info overlay - top left -->
+            <div class="fullscreen-word-overlay" id="fullscreen-word-overlay">
+                <div class="fullscreen-word-main" id="fullscreen-word-main"></div>
+                <div class="fullscreen-word-reading" id="fullscreen-word-reading"></div>
+                <div class="fullscreen-word-meaning" id="fullscreen-word-meaning"></div>
+            </div>
+            
+            <!-- Subtitle overlay - bottom center -->
+            <div class="fullscreen-subtitle-overlay" id="fullscreen-subtitle-overlay">
+                <div class="fullscreen-example-sentence" id="fullscreen-example-sentence"></div>
+                <div class="fullscreen-example-translation" id="fullscreen-example-translation"></div>
+            </div>
+            
+            <!-- Control panel - bottom right -->
+            <div class="fullscreen-controls" id="fullscreen-controls">
+                <div class="fullscreen-counter" id="fullscreen-counter">1 / 1</div>
+                <div class="nav-group">
+                    <button class="fullscreen-control-btn" id="fullscreen-prev-btn" data-tooltip="Previous (←)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                        </svg>
+                    </button>
+                    <button class="fullscreen-control-btn" id="fullscreen-next-btn" data-tooltip="Next (→)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
+                    </button>
+                </div>
+                <button class="fullscreen-control-btn play-btn" id="fullscreen-play-btn" data-tooltip="Play Audio (Space)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                </button>
+                <button class="fullscreen-control-btn" id="fullscreen-play-all-btn" data-tooltip="Play All">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z M16 5v14l8-7z"/>
+                    </svg>
+                </button>
+                <button class="fullscreen-control-btn" id="fullscreen-loop-btn" data-tooltip="Toggle Loop">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
@@ -2363,6 +2845,11 @@
                         <img data-action="play-audio" class="example-image" alt="Example Scene" style="display: none;">
                         <div class="audio-visualizer-container"><canvas id="audio-visualizer"></canvas></div>
                         <button data-action="play-audio" class="ik-btn-overlay" title="Play Audio" style="display: none;">${ICONS.PLAY}</button>
+                        <button data-action="toggle-fullscreen" class="fullscreen-toggle-btn" title="Toggle Fullscreen" style="display: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                            </svg>
+                        </button>
                     </div>
                     <div class="example-text-container">
                         <button class="copy-example-btn" data-action="copy-sentence" title="Copy Japanese sentence" aria-label="Copy Japanese sentence to clipboard">
@@ -2400,9 +2887,31 @@
                 playAllBtn: sel('[data-action="play-all"]'), loopBtn: sel('[data-action="toggle-loop"]'),
                 retryBtn: sel('[data-action="retry"]'), audioBtn: sel('.ik-btn-overlay'),
                 visualizerContainer: sel('.audio-visualizer-container'),
-                visualizerCanvas: sel('#audio-visualizer')
+                visualizerCanvas: sel('#audio-visualizer'),
+                fullscreenToggleBtn: sel('[data-action="toggle-fullscreen"]')
             };
             this.visualizerCtx = this.elements.visualizerCanvas.getContext('2d');
+            
+            // Cache fullscreen modal elements
+            this.fullscreenElements = {
+                modal: document.getElementById('fullscreen-modal'),
+                image: document.getElementById('fullscreen-image'),
+                closeBtn: document.getElementById('fullscreen-close-btn'),
+                wordMain: document.getElementById('fullscreen-word-main'),
+                wordReading: document.getElementById('fullscreen-word-reading'),
+                wordMeaning: document.getElementById('fullscreen-word-meaning'),
+                exampleSentence: document.getElementById('fullscreen-example-sentence'),
+                exampleTranslation: document.getElementById('fullscreen-example-translation'),
+                wordOverlay: document.getElementById('fullscreen-word-overlay'),
+                subtitleOverlay: document.getElementById('fullscreen-subtitle-overlay'),
+                controls: document.getElementById('fullscreen-controls'),
+                counter: document.getElementById('fullscreen-counter'),
+                prevBtn: document.getElementById('fullscreen-prev-btn'),
+                playBtn: document.getElementById('fullscreen-play-btn'),
+                playAllBtn: document.getElementById('fullscreen-play-all-btn'),
+                nextBtn: document.getElementById('fullscreen-next-btn'),
+                loopBtn: document.getElementById('fullscreen-loop-btn')
+            };
             
             // Restore the loop button visual state after elements are cached
             if (this.elements.loopBtn) {
@@ -2427,9 +2936,109 @@
                     'toggle-loop': () => this.toggleLoop(),
                     'play-all': () => this.handlePlayAll(),
                     'retry': () => this.retryCurrentFetch(),
-                    'copy-sentence': () => this.copyExampleText('sentence')
+                    'copy-sentence': () => this.copyExampleText('sentence'),
+                    'toggle-fullscreen': () => this.toggleFullscreen()
                 };
                 actionMap[action]?.();
+            });
+            
+            // Fullscreen modal event listeners
+            if (this.fullscreenElements.closeBtn) {
+                this.fullscreenElements.closeBtn.addEventListener('click', () => this.closeFullscreen());
+            }
+            
+            if (this.fullscreenElements.modal) {
+                this.fullscreenElements.modal.addEventListener('click', (e) => {
+                    if (e.target === this.fullscreenElements.modal) {
+                        this.closeFullscreen();
+                    }
+                });
+                
+                // Cursor auto-hide functionality
+                let cursorTimeout;
+                const showCursor = () => {
+                    this.fullscreenElements.modal.classList.add('show-cursor');
+                    clearTimeout(cursorTimeout);
+                    cursorTimeout = setTimeout(() => {
+                        this.fullscreenElements.modal.classList.remove('show-cursor');
+                    }, 3000);
+                };
+                
+                this.fullscreenElements.modal.addEventListener('mousemove', showCursor);
+                this.fullscreenElements.modal.addEventListener('mouseenter', showCursor);
+            }
+            
+            // Fullscreen control buttons
+            if (this.fullscreenElements.prevBtn) {
+                this.fullscreenElements.prevBtn.addEventListener('click', () => {
+                    this.navigate(-1);
+                    setTimeout(() => this.updateFullscreenContent(), 100);
+                });
+            }
+            
+            if (this.fullscreenElements.nextBtn) {
+                this.fullscreenElements.nextBtn.addEventListener('click', () => {
+                    this.navigate(1);
+                    setTimeout(() => this.updateFullscreenContent(), 100);
+                });
+            }
+            
+            if (this.fullscreenElements.playBtn) {
+                this.fullscreenElements.playBtn.addEventListener('click', () => {
+                    this.playCurrentAudio();
+                });
+            }
+            
+            if (this.fullscreenElements.playAllBtn) {
+                this.fullscreenElements.playAllBtn.addEventListener('click', () => {
+                    this.handlePlayAll();
+                    this.updateFullscreenPlayAllState();
+                });
+            }
+            
+            if (this.fullscreenElements.loopBtn) {
+                this.fullscreenElements.loopBtn.addEventListener('click', () => {
+                    this.toggleLoop();
+                    this.updateFullscreenLoopState();
+                });
+            }
+            
+            // Escape key to close fullscreen
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && this.fullscreenElements.modal && this.fullscreenElements.modal.classList.contains('active')) {
+                    this.closeFullscreen();
+                }
+                
+                // F key to toggle fullscreen (when image is visible)
+                if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    if (this.elements.image && this.elements.image.style.display !== 'none' && this.examples.length > 0) {
+                        e.preventDefault();
+                        this.toggleFullscreen();
+                    }
+                }
+                
+                // Controls in fullscreen mode
+                if (this.fullscreenElements.modal && this.fullscreenElements.modal.classList.contains('active')) {
+                    // Show cursor when any key is pressed
+                    this.fullscreenElements.modal.classList.add('show-cursor');
+                    
+                    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        this.navigate(-1);
+                        setTimeout(() => this.updateFullscreenContent(), 100);
+                    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        this.navigate(1);
+                        setTimeout(() => this.updateFullscreenContent(), 100);
+                    } else if (e.key === ' ') {
+                        e.preventDefault();
+                        this.playCurrentAudio();
+                    } else if (e.key.toLowerCase() === 'l') {
+                        e.preventDefault();
+                        this.toggleLoop();
+                        this.updateFullscreenLoopState();
+                    }
+                }
             });
         }
         
@@ -2513,6 +3122,7 @@
             const example = this.examples[this.currentIndex];
 
             this.elements.audioBtn.style.display = example.full_sound_url ? 'grid' : 'none';
+            this.elements.fullscreenToggleBtn.style.display = example.full_image_url ? 'grid' : 'none';
             this.elements.skeleton.style.display = 'block';
             this.elements.image.style.display = 'none';
             
@@ -2523,6 +3133,127 @@
         }
 
         _updateCounter() { this.elements.counter.textContent = `${this.currentIndex + 1} of ${this.examples.length}`; }
+
+        // Fullscreen functionality
+        toggleFullscreen() {
+            if (!this.examples || this.examples.length === 0) return;
+            
+            const currentExample = this.examples[this.currentIndex];
+            if (!currentExample || !currentExample.full_image_url) return;
+            
+            // Update fullscreen image
+            this.fullscreenElements.image.src = currentExample.full_image_url;
+            
+            // Get current word information
+            const wordMain = document.querySelector('.word-main')?.textContent || '';
+            const wordReading = document.querySelector('.word-reading')?.textContent.replace(/[()]/g, '') || '';
+            const wordMeaning = document.getElementById('word-details')?.querySelector('.simple-meanings')?.textContent || '';
+            
+            // Update word overlay (top-left)
+            this.fullscreenElements.wordMain.textContent = wordMain;
+            this.fullscreenElements.wordReading.textContent = wordReading;
+            this.fullscreenElements.wordMeaning.textContent = wordMeaning;
+            
+            // Update subtitle overlay (bottom-center)
+            const japaneseSentence = currentExample.sentence || '';
+            const englishTranslation = currentExample.translation || '';
+            
+            this.fullscreenElements.exampleSentence.textContent = japaneseSentence;
+            this.fullscreenElements.exampleTranslation.textContent = englishTranslation;
+            
+            // Show/hide overlays based on content availability
+            const hasWordInfo = wordMain || wordReading || wordMeaning;
+            const hasSubtitles = japaneseSentence || englishTranslation;
+            
+            this.fullscreenElements.wordOverlay.style.display = hasWordInfo ? 'block' : 'none';
+            this.fullscreenElements.subtitleOverlay.style.display = hasSubtitles ? 'block' : 'none';
+            
+            // Show fullscreen modal
+            this.fullscreenElements.modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            
+            // Initialize fullscreen controls
+            this.updateFullscreenCounter();
+            this.updateFullscreenLoopState();
+            this.updateFullscreenPlayAllState();
+            
+            // Show cursor initially
+            this.fullscreenElements.modal.classList.add('show-cursor');
+            
+            // Log for debugging
+            console.log('🖼️ Fullscreen activated with:', {
+                word: wordMain,
+                reading: wordReading,
+                meaning: wordMeaning,
+                sentence: japaneseSentence,
+                translation: englishTranslation
+            });
+        }
+        
+        updateFullscreenCounter() {
+            if (this.fullscreenElements.counter && this.examples.length > 0) {
+                this.fullscreenElements.counter.textContent = `${this.currentIndex + 1} / ${this.examples.length}`;
+            }
+        }
+        
+        updateFullscreenLoopState() {
+            if (this.fullscreenElements.loopBtn) {
+                this.fullscreenElements.loopBtn.classList.toggle('active', this.isLoopingAudio);
+            }
+        }
+        
+        updateFullscreenPlayAllState() {
+            if (this.fullscreenElements.playAllBtn) {
+                this.fullscreenElements.playAllBtn.classList.toggle('active', this.isPlayingAll);
+            }
+        }
+        
+        closeFullscreen() {
+            if (this.fullscreenElements.modal) {
+                this.fullscreenElements.modal.classList.remove('active');
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+        }
+        
+        updateFullscreenContent() {
+            if (!this.fullscreenElements.modal.classList.contains('active')) return;
+            if (!this.examples || this.examples.length === 0) return;
+            
+            const currentExample = this.examples[this.currentIndex];
+            if (!currentExample || !currentExample.full_image_url) {
+                this.closeFullscreen();
+                return;
+            }
+            
+            // Update image
+            this.fullscreenElements.image.src = currentExample.full_image_url;
+            
+            // Get current word information
+            const wordMain = document.querySelector('.word-main')?.textContent || '';
+            const wordReading = document.querySelector('.word-reading')?.textContent.replace(/[()]/g, '') || '';
+            const wordMeaning = document.getElementById('word-details')?.querySelector('.simple-meanings')?.textContent || '';
+            
+            // Update word overlay
+            this.fullscreenElements.wordMain.textContent = wordMain;
+            this.fullscreenElements.wordReading.textContent = wordReading;
+            this.fullscreenElements.wordMeaning.textContent = wordMeaning;
+            
+            // Update subtitle overlay
+            this.fullscreenElements.exampleSentence.textContent = currentExample.sentence || '';
+            this.fullscreenElements.exampleTranslation.textContent = currentExample.translation || '';
+            
+            // Show/hide overlays based on content
+            const hasWordInfo = wordMain || wordReading || wordMeaning;
+            const hasSubtitles = currentExample.sentence || currentExample.translation;
+            
+            this.fullscreenElements.wordOverlay.style.display = hasWordInfo ? 'block' : 'none';
+            this.fullscreenElements.subtitleOverlay.style.display = hasSubtitles ? 'block' : 'none';
+            
+            // Update controls
+            this.updateFullscreenCounter();
+            this.updateFullscreenLoopState();
+            this.updateFullscreenPlayAllState();
+        }
 
         navigate(direction) {
             if (this.examples.length < 2) return;
@@ -3019,6 +3750,12 @@
             for (let i = 0; i < this.examples.length && this.isPlayingAll; i++) {
                 this.currentIndex = (initialIndex + i) % this.examples.length;
                 this._updateContent();
+                
+                // Update fullscreen content if fullscreen is active
+                if (this.fullscreenElements.modal && this.fullscreenElements.modal.classList.contains('active')) {
+                    this.updateFullscreenContent();
+                }
+                
                 const example = this.examples[this.currentIndex];
                 if (example?.full_sound_url) {
                     await this.playAudio(example.full_sound_url);
