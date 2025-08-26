@@ -3532,7 +3532,19 @@
     // Function to safely escape RTK text for JavaScript string literals
   function escapeRTKForJS(text) {
     if (!text) return '';
-    return JSON.stringify(text).slice(1, -1); // Remove outer quotes
+    
+    // First escape for JavaScript string literals
+    let escaped = JSON.stringify(text).slice(1, -1); // Remove outer quotes
+    
+    // Additional escaping for HTML attribute context
+    // Replace backslashes with HTML entities to prevent HTML parser from consuming them
+    escaped = escaped.replace(/\\/g, '\\\\');
+    
+    // Also escape quotes for HTML attribute safety
+    escaped = escaped.replace(/'/g, "\\'");
+    escaped = escaped.replace(/"/g, '\\"');
+    
+    return escaped;
 }
 
     // --- RTK Edit Functionality ---
